@@ -1,0 +1,15 @@
+name: topo_masking
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pytorch
+  - torchaudio
+  - torchvision
+  - pyg
+  - matplotlib
+  - networkx
+  - numpy
+  - scipy
+  - tqdm
+  - ipykernel
