@@ -6,7 +6,7 @@ dependencies:
   - pytorch
   - torchaudio
   - torchvision
-  - pyg
+  # - pyg
   - matplotlib
   - networkx
   - numpy
