@@ -1,0 +1,109 @@
+\documentclass[12pt]{article}
+ 
+\usepackage[margin=0.5in]{geometry} 
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{listings}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+
+\setlength{\parindent}{0pt}
+ 
+\newenvironment{theorem}[2][Theorem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{lemma}[2][Lemma]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{exercise}[2][Exercise]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{problem}[2][Problem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{corollary}[2][Corollary]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+\newenvironment{solution}{\begin{proof}[Solution]}{\end{proof}}
+ 
+\begin{document}
+
+\title{Time Complexity Experiment}
+\author{}
+\date{}
+\maketitle
+
+\section{Experiment details}
+The \texttt{run\_experiment()} loop is the engine that drives the graph generation. It systematically increases the size of the graph (N) and, for each size, calculates the theoretical computational cost (FLOPs) for the three different methods.
+
+Here is the breakdown of the logic inside that loop and the three counting functions.
+
+\subsection{The loop structure}
+The loop iterates through powers of 2 (64, 128, 256, etc.).
+\begin{lstlisting}[language=Python, frame=single]
+    for N in N_VALUES:
+\end{lstlisting}
+At every step, $N$ represents the number of nodes (tokens) in the graph. The goal is to see how the cost grows as $N$ gets massive.
+
+\subsubsection{\texttt{count\_flops\_softmax(N, d)}}
+\textbf{Complexity: O($N^2$) (Quadratic)}.\\
+
+This represents the standard Transformer attention: $Att=softmax(QK^T)V$.\\
+
+\textbf{Step A:} ($QK^T$): You multiply a matrix of size ($N \times d$) by ($d \times N$).
+\begin{itemize}
+    \item The result is an ($N \times N$) matrix.
+    \item Every single cell in that ($N \times N$) matrix requires a dot product of size $d$.
+    \item Cost: $N^2 \times 2d$. (Multiplied by 2 because typically 1 multiply + 1 add per element).
+\end{itemize}
+\textbf{Step B:} ($A \times V$): You multiply the resulting ($N \times N$) attention matrix by the Value matrix ($N \times d$).
+\begin{itemize}
+    \item The result is ($N \times d$).
+    \item Every cell in the output requires a dot product of size $N$.
+    \item Cost: $N \times d \times N = N^2 d$.
+\end{itemize}
+\textbf{Total:} We sum them up. The dominant term is $N^2$, making this Quadratic. As N doubles, the cost quadruples.
+
+\subsubsection{\texttt{count\_flops\_linear(N, m, d)}}
+\textbf{Complexity: O($N$) (Linear)}.\\
+
+This represents Linear Attention: $Att=\phi(Q)(\phi(K)^T V)$. The order of multiplication changes.\\
+
+\textbf{Step A:} ($\phi(K)^TV$): You multiply the Key feature map ($m\times N$) by the Value matrix ($N\times d$).
+\begin{itemize}
+    \item The result is a tiny matrix of size ($m\times d$). Crucially, the dimension $N$ disappears from the matrix size here.
+    \item Cost: $m\times d\times N$.
+\end{itemize}
+\textbf{Step B:} ($\phi(Q) \times \ldots$): You multiply the Query feature map ($N\times m$) by that tiny result ($m\times d$).
+\begin{itemize}
+    \item Cost: $N\times d\times m$.
+\end{itemize}
+\textbf{Total:} The cost is proportional to $N$, not $N^2$. As N doubles, the cost doubles.
+
+\subsubsection{\texttt{count\_flops\_grf(...)}}
+
+\textbf{Complexity: O($N$) (Linear with a larger constant)}.\\
+
+This represents the paper's method: $Att=\hat{\Phi}_Q(\hat{\Phi}_K^TV)$. The formula looks like Linear Attention, but $\hat{\Phi}$ is a Sparse Matrix (mostly zeros).\\
+
+\textbf{The Simulation (Why we need it):} We cannot just use a formula like $N \times m$. We need to know exactly how many non-zero entries are in the matrix. The function $simulate\_unique\_visits$ runs a random walk simulation:
+\begin{enumerate}
+    \item Start at Node 0. Walk 4 times.
+    \item How many unique nodes did we touch? (e.g., node 0, 1, 2). That's 3 unique nodes.
+    \item Repeat for all N nodes.
+    \item Sum them up. This is the $avg\_unique\_visits$.
+\end{enumerate}
+
+\textbf{The Calculation:}
+\begin{itemize}
+    \item \textbf{Non-Zeros (NNZ):} If a node visits 3 unique neighbors, and the feature dimension m=8, that node contributes $3 \times 8=24$ non-zero numbers to the sparse matrix.
+    \item \textbf{Sparse Multiplication:} When multiplying sparse matrices, you only do math on the non-zeros.
+    \item \textbf{Cost:} $\approx 4 \times \text{Total NNZ} \times d$.
+\end{itemize}
+
+\textbf{Why it is Linear:} Even though the graph grows to 1,000,000 nodes, a walker starting at Node 1 will typically only wander 3-4 steps away before stopping (due to $p\_halt$). The "local neighborhood size" is constant ($C$). Therefore, Total $NNZ \approx N \times C \times m$. Since C and m are constants, the complexity is O($N$).
+
+\end{document}
