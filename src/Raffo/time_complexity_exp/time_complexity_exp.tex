@@ -36,6 +36,38 @@
 \date{}
 \maketitle
 
+\section{Motivation and Setup}
+
+\subsection{Why count FLOPs instead of Time?}
+While measuring wall-clock time (in seconds) is intuitive, it is heavily influenced by hardware specifics (GPU vs. CPU), background processes, and Python interpreter overhead. To ensure our replication is \textbf{hardware-agnostic}, we count Floating Point Operations (FLOPs). This provides a theoretical guarantee of the algorithm's scaling behavior that holds true regardless of the machine used.
+
+\subsection{Experimental Parameters}
+To exactly replicate Figure 3 from the original paper, we fixed the following hyperparameters:
+\begin{itemize}
+    \item \textbf{Graph Topology:} 1-Dimensional Grid Graph (Linear chain).
+    \item \textbf{Dimensions:} Hidden dimension $d=8$, Feature dimension $m=8$.
+    \item \textbf{Random Walks:} $n=4$ walkers per node, with termination probability $p_{halt}=0.5$.
+    \item \textbf{Stochasticity:} Results for GRF are averaged over 10 random seeds to account for variance in sparsity.
+\end{itemize}
+\textbf{To acknowledge:} The Hidden Dimension (d) and Feature Dimension (m) are terms referring to the size of the vectors used inside the Transformer and the Linear Attention mechanism.\\
+\begin{enumerate}
+    \item Hidden Dimension (d)
+    \begin{itemize}
+        \item \textbf{What it is:} This is the size of the vector representing a single token (a graph node) inside the attention head.
+        \item \textbf{Context:} In a Transformer, your input might be a vector of size 512. Inside the "Multi-Head Attention" block, this vector is split into smaller "heads." If you have 8 heads, d=512/8=64.
+        \item \textbf{In the experiment:} d=8. This means every query ($q_i$), key ($k_i$), and value ($v_i$) is a vector of 8 numbers.
+        \item \textbf{Role:} It determines the "capacity" or "richness" of the information each token holds during the attention step.
+    \end{itemize}
+    \item Feature Dimension (m)
+    \begin{itemize}
+        \item \textbf{What it is:} This is the size of the projected vector after applying the feature map $\phi(\cdot)$ in Linear Attention.
+        \item \textbf{Context:} Linear Attention works by approximating the softmax function. It takes a query vector $q_i$ (size $d$) and maps it to a new feature vector $\phi(q_i)$ of size $m$.
+        \item \textbf{The Transformation:} $\mathbb{R}^d \to \mathbb{R}^m$.
+        \item \textbf{In your experiment:} $m=8$.
+        \item \textbf{Role:} It determines the "rank" of the low-rank approximation. If m is small, the approximation is faster but less accurate. If m is large, it's more accurate but slower. In standard Softmax attention, this concept doesn't exist (or rather, m=N, which is why it's slow).
+    \end{itemize}
+\end{enumerate}
+
 \section{Experiment details}
 The \texttt{run\_experiment()} loop is the engine that drives the graph generation. It systematically increases the size of the graph (N) and, for each size, calculates the theoretical computational cost (FLOPs) for the three different methods.
 
@@ -106,4 +138,50 @@ This represents the paper's method: $Att=\hat{\Phi}_Q(\hat{\Phi}_K^TV)$. The for
 
 \textbf{Why it is Linear:} Even though the graph grows to 1,000,000 nodes, a walker starting at Node 1 will typically only wander 3-4 steps away before stopping (due to $p\_halt$). The "local neighborhood size" is constant ($C$). Therefore, Total $NNZ \approx N \times C \times m$. Since C and m are constants, the complexity is O($N$).
 
+\section{Interpretation of Results}
+
+\subsection{Quantitative Scaling Analysis}
+We measured the computational cost (in MFLOPs, scaled by $10^6$) for graph sizes ranging from $N=1$ to $N=4096$. The results reveal three distinct regimes of operation.
+
+\subsubsection*{The Crossover Point ($N \approx 8$)}
+Contrary to the intuition that "Linear Attention is always faster," our data shows that for extremely small graphs ($N < 8$), standard Softmax attention is more efficient.
+\begin{itemize}
+    \item At $N=1$: Softmax ($3.20 \times 10^{-5}$) is an order of magnitude faster than Linear ($2.56 \times 10^{-4}$).
+    \item At $N=4$: Softmax is still faster ($5.12 \times 10^{-4}$ vs $1.02 \times 10^{-3}$).
+    \item At $N=8$: The methods reach a \textbf{Crossover Point} where costs are identical ($2.05 \times 10^{-3}$ MFLOPs).
+\end{itemize}
+\textbf{Theoretical Explanation:} Softmax complexity is $4N^2d$ while Linear is $4Nmd$. With our parameters ($d=8, m=8$), the costs equalize when $N^2 = Nm$, i.e., $N=m=8$. Below this threshold, the overhead of projecting features to dimension $m$ dominates the cost.
+
+\subsubsection*{The Divergence ($N > 8$)}
+As $N$ grows beyond the feature dimension $m$, the quadratic scaling of Softmax causes a catastrophic increase in cost compared to the linear methods.
+\begin{itemize}
+    \item At $N=4096$: Softmax requires \textbf{537 MFLOPs}.
+    \item At $N=4096$: Linear requires only \textbf{1.05 MFLOPs}.
+\end{itemize}
+This represents a speedup factor of $\approx \mathbf{511\times}$, empirically confirming the necessity of linear approximations for large-scale graph transformers.
+
+\subsection{Analyzing the GRF Overhead}
+The "GRF (Ours)" method scales linearly (slope $\approx 1$ in the log-log plot), mirroring the behavior of unmasked Linear attention. However, it incurs a consistent overhead.
+\begin{itemize}
+    \item At $N=4096$, GRF cost is $3.30$ MFLOPs compared to Linear's $1.05$ MFLOPs.
+    \item This yields an overhead ratio of $\approx 3.14$.
+\end{itemize}
+\textbf{Interpretation:} This constant factor corresponds to the sparsity of the Graph Random Features. In our 1D grid experiment with $p_{halt}=0.5$, a random walker visits on average $\approx 3.1$ unique nodes (the node itself plus immediate neighbors). Therefore, while the complexity class remains $\mathcal{O}(N)$, the absolute cost is roughly $3\times$ that of unmasked attention due to the local neighborhood aggregation.
+
+\subsection{Summary Table}
+The following table summarizes the critical transitions in computational cost.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}rccc@{}}
+\toprule
+\textbf{N (Nodes)} & \textbf{Softmax ($10^6$)} & \textbf{Linear ($10^6$)} & \textbf{GRF ($10^6$)} \\ \midrule
+1 & $3.20 \times 10^{-5}$ & $2.56 \times 10^{-4}$ & $2.56 \times 10^{-4}$ \\
+\textbf{8} & $\mathbf{2.05 \times 10^{-3}}$ & $\mathbf{2.05 \times 10^{-3}}$ & $6.48 \times 10^{-3}$ \\
+64 & $1.31 \times 10^{-1}$ & $1.64 \times 10^{-2}$ & $5.38 \times 10^{-2}$ \\
+512 & $8.39 \times 10^{0}$ & $1.31 \times 10^{-1}$ & $4.11 \times 10^{-1}$ \\
+4096 & $5.37 \times 10^{2}$ & $1.05 \times 10^{0}$ & $3.30 \times 10^{0}$ \\ \bottomrule
+\end{tabular}
+\caption{Selected data points showing the crossover at $N=8$ and the divergence at large $N$.}
+\end{table}
 \end{document}
