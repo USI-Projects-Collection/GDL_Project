@@ -54,3 +54,4 @@ bin/
 # per non fillare il cluster
 # *.pdf
 # *.png
+src/Raffo/ViTs_exp/data/
