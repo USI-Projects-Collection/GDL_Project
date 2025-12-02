@@ -150,7 +150,7 @@ centering]{geometry}
     \end{minipage}\hfill
     \begin{minipage}[t]{4.5cm}
   \vskip 12.5pt%
-    {\hfill\raggedright\textbf{GDL 2023}\\[0.1cm]%
+    {\hfill\raggedright\textbf{GDL 2025}\\[0.1cm]%
     \hfill\small Group id:~~\groupid\par%
     \hfill\small Project id:~~\projectid}%
     \end{minipage}
@@ -171,7 +171,7 @@ centering]{geometry}
 \def\startpage{\pageref{FirstPage}}
 \def\endpage{\pageref{LastPage}}
 
-\def\runninghead{\markboth{GDL 2023}}
+\def\runninghead{\markboth{GDL 2025}}
 
 \def\ps@title{%
 \def\@oddhead{\parbox{\textwidth}{\mbox{}\\[-1pt]%
@@ -272,6 +272,5 @@ centering]{geometry}
 
 \pagestyle{sagepage}
 
-\twocolumn
 \normalsize
 \sloppy
