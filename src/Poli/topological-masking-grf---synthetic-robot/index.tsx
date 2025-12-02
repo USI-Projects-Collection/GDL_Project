@@ -5,7 +5,7 @@ import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 
 // --- Configuration ---
-const NUM_POINTS = 512;
+const NUM_POINTS = 516;
 const K_NEIGHBORS = 6;
 const ARM_SEGMENTS = {
   base: { height: 0.2, radius: 0.15 },
@@ -339,7 +339,7 @@ const RobotSimulation = ({
 // --- Main UI & App ---
 
 const App = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [showGraph, setShowGraph] = useState(false);
   const [showColors, setShowColors] = useState(false);
   const [frameCount, setFrameCount] = useState(0);
