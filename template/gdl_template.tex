@@ -1,5 +1,20 @@
 \documentclass{gdl}
 
+\usepackage[T1]{fontenc} 
+\usepackage[utf8]{inputenc} 
+\usepackage{lmodern} 
+\usepackage{graphicx} 
+\usepackage{hyperref} 
+\usepackage{geometry} 
+\usepackage{longtable} 
+\usepackage{tcolorbox}
+\usepackage{booktabs} 
+\usepackage{textcomp} 
+\usepackage{fontawesome5} 
+\usepackage{array} 
+\usepackage{enumitem}
+\usepackage{tocloft}
+
 % CHANGE THESE
 \def\groupid{------}
 \def\projectid{------}
@@ -7,12 +22,12 @@
 \begin{document}
 
 % CHANGE THIS
-\title{Title of the report}
+\title{Linear Transformer Topological Masking with Graph Random Features}
 
 % CHANGE THIS
 \author{%
-Name1 Surname1, Name2 Surname2, Name3 Surname3\\
-\texttt{\{name1.surname1, name2.surname2, name3.surname3\}@usi.ch}
+Paolo Deidda, Raffaele Perri, Paul Leopold Seipl\\
+\texttt{\{paolo.deidda, raffaele.perri, paul.leopold.seipl\}@usi.ch}
 }
 
 \begin{abstract}
@@ -29,72 +44,51 @@ The length of the report should be between 4 and 8 pages (without considering re
 \end{abstract}
 
 \maketitle
+\vfill
+\tableofcontents
 
+\newpage
+
+\twocolumn
+
+% ==========================================================================
+% ==========================================================================
 \section{Introduction}
 
 Here you should clarify the context of your project and the problem you are dealing with. You should also make a brief summary of the main results and contributions (i.e., if you tried to replicate the results of an existing paper you should say if you were successful or not). The introduction should help the reader to follow along for the rest of the paper.
 
-
+% ==========================================================================
+% ==========================================================================
 \section{Related works}
 
-Give a brief summary of (some) existing methods that are related to you project. For instance, you can refer to~\citet{gilmer2017neural}, or simply~\cite{gilmer2017neural}, for introducing Message Passing Neural Networks. In this section it is important to provide readers references to the current state of the art and the foundations of the presented method. 
+Give a brief summary of (some) existing methods that are related to you project. For instance, you can refer to~\citet{reid2025linear}, or simply~\cite{reid2025linear}, for introducing Message Passing Neural Networks. In this section it is important to provide readers references to the current state of the art and the foundations of the presented method. 
 
 N.B.: When referencing a different approach, it is not necessary to provide a detailed description, only one/two brief sentences are enough. The interested readers can eventually read the referenced work. 
 
-\section{Methodology}
+% ==========================================================================
+% ==========================================================================
+\input{inputs/methodology/methodolgy.tex}
 
-\textit{You can change the name of this section as you see fit.}\\
-In this section you should give a description of the methodological aspects of your work, for instance how you modified an existing method to perform a particular task or to overcome a particular limitation. If your project is about reproducibility, here you should describe the method presented in the original paper.
+% ==========================================================================
+% ==========================================================================
+\input{inputs/implementation/implementation.tex}
 
-\section{Implementation}
+% ==========================================================================
+% ==========================================================================
+\input{inputs/results/results.tex}
 
-This section should be structured as follows (from the Reproducibility challenge template):
-
----
-
-Briefly describe what you did and which resources did you use. E.g. Did you use author's code, did you re-implement parts of the pipeline, how much time did it take to produce the results, what hardware you were using and how long it took to train/evaluate. 
-
-\subsection{Datasets}
-Describe the datasets you used and how you obtained them. 
-
-\subsection{Hyperparameters}
-Describe how you set the hyperparameters and what was the source for their value (e.g. paper, code or your guess). 
-
-\subsection{Experimental setup}
-Explain how you ran your experiments, e.g. the CPU/GPU resources and provide the link to your code and notebooks.
-
-\subsection{Computational requirements}
-Provide information on computational requirements for each of your experiments. For example, the number of CPU/GPU hours and memory requirements. You'll need to think about this ahead of time, and write your code in a way that captures this information so you can later add it to this section. 
-
-\section{Results}
-
-In this section you should report the results of your work (e.g., the outcome of an empirical analysis). You should be objective and support your statements with empirical evidence.
-
-\begin{table}[h]
-\small\sf\centering
-\caption{Experimental results (average of 3 runs).}
-\begin{tabular}{l c c}
-\toprule
-Methods & MAE & MSE\\
-\midrule
-\texttt{Baseline1} & $21.23 \pm 1.65$ & $841.36 \pm 12.65$\\
-\texttt{Baseline2} & $15.45 \pm 1.02$ & $652.38 \pm 09.89$\\
-\midrule
-\texttt{Method} & $12.03 \pm 0.35$ & $324.13 \pm 05.56$\\
-\bottomrule
-\end{tabular}
-\label{tab:table}
-\end{table}
-
-Use figures, plots and tables (like \autoref{tab:table}) to present your results in a nice and readable way.
-
+% ==========================================================================
+% ==========================================================================
 \section{Discussion and conclusion}
 
 Here you can express your judgments and draw your conclusions based on the  evidences produced on the previous sections.
 
 Try to summarize the achievements of your project and its limits, suggesting (when appropriate) possible extensions and future works.
-
+    
+% ==========================================================================
+% ==========================================================================
 % Bibliography
+\onecolumn
 \bibliography{bibliography}
 \bibliographystyle{unsrtnat}
 \clearpage

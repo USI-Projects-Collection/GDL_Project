@@ -55,3 +55,10 @@ bin/
 # *.pdf
 # *.png
 src/Raffo/ViTs_exp/data/
+
+*.npy
+*.npz
+
+# node modules
+node_modules/
+**/node_modules/
