@@ -3,7 +3,6 @@ filename=gdl_template
 pdf:
 	pdflatex ${filename} || exit 1
 	pdflatex ${filename} || exit 1
-	make clean
 
 read:
 	evince ${filename}.pdf &
@@ -25,4 +24,7 @@ clean:
 	${filename}.toc \
 	${filename}.nav \
 	${filename}.vrb \
-	${filename}.snm
+	${filename}.snm \
+	${filename}.fdb_latexmk \
+	${filename}.fls \
+	${filename}.synctex.gz 
