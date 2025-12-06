@@ -50,6 +50,10 @@ bin/
 *.idx
 *.ind
 *.lof
+*.toc
+*.log
+*.log
+
 
 # per non fillare il cluster
 # *.pdf
