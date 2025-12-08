@@ -29,9 +29,9 @@
    - [github](https://github.com/visipedia/inat_comp/tree/master/2021)
 
 2. Size
-   - Training images:       2,686,843
-   - Validation images:     100,000
-   - Test images:          	500,000
+   - Training images:         2,686,843
+   - Validation images:       100,000
+   - Test images:             500,000
    - Raw:                   **224 - 316.54 GB**
 
 ### Place365 (Small)
