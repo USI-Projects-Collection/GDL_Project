@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1765031727.45981 "/Users/raffaeleperri/Desktop/Master/3rd Semester/Graph Deep Learning/Project/GDL_Project/src/Raffo/ViTs_exp/ViT_exp.tex" "ViT_exp.pdf" "ViT_exp" 1765031727.95728 0
-  "/Users/raffaeleperri/Desktop/Master/3rd Semester/Graph Deep Learning/Project/GDL_Project/src/Raffo/ViTs_exp/ViT_exp.tex" 1765031727.29024 18587 bd9ebb9734fa78491512a4b895f60956 ""
+["pdflatex"] 1765200304.70676 "/Users/raffaeleperri/Desktop/Master/3rd Semester/Graph Deep Learning/Project/GDL_Project/src/Raffo/ViTs_exp/ViT_exp.tex" "ViT_exp.pdf" "ViT_exp" 1765200305.19388 0
+  "/Users/raffaeleperri/Desktop/Master/3rd Semester/Graph Deep Learning/Project/GDL_Project/src/Raffo/ViTs_exp/ViT_exp.tex" 1765200303.9999 15924 016dec61f526c59b45f0748d7848380e ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/tcrm1200.tfm" 1136768653 1536 74b7293ec3713bb7fdca8dd1bd1f469c ""
@@ -105,9 +105,9 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1748101203 5467155 19efa205003f9ecad95fbbaa6ff24da1 ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1748101145 3345732 9a08b3e6ae571bccf4f3cd2b4b87b490 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "ViT_exp.aux" 1765031727.91307 3572 6e9f0da4580a228460f5b83e54f3a9a3 "pdflatex"
-  "ViT_exp.out" 1765031727.91368 4587 788ab1444c038bc7c5674a4c9b8d6e33 "pdflatex"
-  "ViT_exp.tex" 1765031727.29024 18587 bd9ebb9734fa78491512a4b895f60956 ""
+  "ViT_exp.aux" 1765200305.14791 2916 dfc764e6df3ec4845c65508815d34927 "pdflatex"
+  "ViT_exp.out" 1765200305.1485 3951 fce7ef8359d39f1a5ba4b787c2a076e5 "pdflatex"
+  "ViT_exp.tex" 1765200303.9999 15924 016dec61f526c59b45f0748d7848380e ""
   "img/paper_table_1.png" 1765030176.60462 88729 0e4f088d8bf0c8af1771e1f92aa579b7 ""
   (generated)
   "ViT_exp.aux"
