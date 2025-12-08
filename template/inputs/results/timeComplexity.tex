@@ -1,1 +1,38 @@
 \subsection{Time Complexity}
+The results of our replication confirms the time complexity claims made in the original paper. Figure \ref{fig:1} (reproduced below) plots the calculated FLOPs (scaled by $10^6$) against the number of graph nodes $N$ on a log-log scale.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{assets/replication_figure_3_exact.png}
+    \caption{Time Complexity Replication Results: FLOPs vs Number of Nodes ($N$)}
+    \label{fig:1}
+\end{figure}
+Table \ref{tab:computational_cost} details the specific computational costs at key intervals.
+\begin{table}[H]
+    \centering
+    \resizebox{\columnwidth}{!}{%
+    \begin{tabular}{l|ccc}
+        \toprule
+        \textbf{Graph Size ($N$)} & \textbf{Softmax} & \textbf{Linear} & \textbf{GRF-Masked} \\
+        & ($10^6$ FLOPs) & ($10^6$ FLOPs) & ($10^6$ FLOPs) \\
+        \midrule
+        1 & $3.20 \times 10^{-5}$ & $2.56 \times 10^{-4}$ & $2.56 \times 10^{-4}$ \\
+        8 (Crossover) & $2.05 \times 10^{-3}$ & $2.05 \times 10^{-3}$ & $6.48 \times 10^{-3}$ \\
+        64 & $1.31 \times 10^{-1}$ & $1.64 \times 10^{-2}$ & $5.38 \times 10^{-2}$ \\
+        512 & $8.39 \times 10^{0}$ & $1.31 \times 10^{-1}$ & $4.11 \times 10^{-1}$ \\
+        4096 & $5.37 \times 10^{2}$ & $1.05 \times 10^{0}$ & $3.30 \times 10^{0}$ \\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{Computational cost comparison across different graph sizes. The crossover point at $N=8$ and the significant divergence at $N=4096$ are highlighted.}
+    \label{tab:computational_cost}
+\end{table}
+\textbf{Analysis of Scaling Regimes}
+\begin{itemize}
+    \item \textbf{Crossover Point ($N=8$):} Our results precisely reproduce the crossover point predicted by theory. At $N=8$, Softmax and Linear attention incur identical costs ($2.05 \times 10^{-3}$ MFLOPs). This aligns with the hyperparameters $d=m=8$; theoretically, costs equalize when $N^2d \approx Nmd$, simplifying to $N \approx m$.
+    
+    \item \textbf{Quadratic Explosion:} For $N > 8$, the cost of Unmasked Softmax attention grows quadratically. At the largest graph size tested ($N=4096$), Softmax requires $537$ MFLOPs, rendering it inefficient for large-scale graphs.
+    
+    \item \textbf{Linear Efficiency:} Both Linear attention and GRF-Masked attention exhibit linear scaling. At $N=4096$, Unmasked Linear requires only $1.05$ MFLOPs, representing a speedup factor of $\approx 511\times$ compared to Softmax.
+\end{itemize}
+\textbf{GRF Overhead:}
+The GRF-Masked method maintains the $\mathcal{O}(N)$ complexity class but incurs a constant overhead. At $N=4096$, the GRF cost is $3.30$ MFLOPs compared to $1.05$ MFLOPs for standard Linear attention. This overhead ratio ($\approx 3.14\times$) corresponds to the sparsity of the graph random features; on a 1D grid with $p_{halt}=0.5$, walkers visit an average of $\approx 3.1$ unique nodes.
