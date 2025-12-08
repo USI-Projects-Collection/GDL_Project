@@ -58,7 +58,11 @@ bin/
 # per non fillare il cluster
 # *.pdf
 # *.png
-src/Raffo/ViTs_exp/data/
+
+# remove data folder from ViTs_exp
+src/ViTs_exp/data/
+
+data/
 
 *.npy
 *.npz
