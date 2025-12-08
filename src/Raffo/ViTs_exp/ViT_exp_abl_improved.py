@@ -35,6 +35,7 @@ P_HALT = 0.1
 MAX_WALK_LEN = 10
 
 # --- 2. DATASET ---
+# Normalizes image pixel values to range [−1,1] to help training stability.
 transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
@@ -58,9 +59,13 @@ class SoftmaxAttention(nn.Module):
     def forward(self, x):
         B, N, C = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=-1)
+        # Projects input x into Query (Q), Key (K), and Value (V).
         q, k, v = map(lambda t: t.reshape(B, N, self.num_heads, -1).transpose(1, 2), qkv)
+        # Computes scores: A=QK^T + Scales by 1/sqrt(d) -> self.scale
         attn = (q @ k.transpose(-2, -1)) * self.scale
+        # Applies Softmax to normalize rows to sum to 1.
         attn = attn.softmax(dim=-1)
+        # Multiplies by V: Output =AV.
         out = (attn @ v).transpose(1, 2).reshape(B, N, C)
         return self.to_out(out)
 
@@ -73,18 +78,23 @@ class LinearAttention(nn.Module):
         self.eps = 1e-6
 
     def feature_map(self, x):
+        # Applies ReLU(x) + epsilon. This ensures all features are positive, which is required for the linear attention trick to work mathematically.
         return torch.nn.functional.relu(x) + self.eps
 
     def forward(self, x):
         B, N, C = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=-1)
         q, k, v = map(lambda t: t.reshape(B, N, self.num_heads, -1).transpose(1, 2), qkv)
+        # Applies feature_map to Q and K, creating ϕ(Q) and ϕ(K).
         q = self.feature_map(q)
         k = self.feature_map(k)
+        # The Linear Trick: Instead of (QK^T)V, it computes Q(K^TV).
         kv = k.transpose(-2, -1) @ v
+        # Calculates the normalization factor Z=Q(K^T1).
         z = 1 / (q @ k.sum(dim=-2, keepdim=True).transpose(-2, -1) + self.eps)
         out = (q @ kv) * z
         out = out.transpose(1, 2).reshape(B, N, C)
+        # Returns normalized output
         return self.to_out(out)
 
 class GRFExactAttention(nn.Module):
@@ -94,30 +104,36 @@ class GRFExactAttention(nn.Module):
         self.to_qkv = nn.Linear(dim, dim * 3, bias=False)
         self.to_out = nn.Linear(dim, dim)
         self.eps = 1e-6
-        # Pre-compute the Mask
-        self.register_buffer('mask', self._generate_grf_mask(num_patches, n_walks, p_halt))
+        # Pre-compute the Mask (create the topological mask.)
+        self.register_buffer('mask', self._generate_grf_mask(num_patches, n_walks, p_halt))     # tells PyTorch that self.mask is a tensor that should be saved with the model but should not be updated by the optimizer
 
     def _generate_grf_mask(self, N, n_walks, p_halt):
-        # ... (Same generation logic as before) ...
+        # Creates an 8×8 grid graph
         side = int(np.sqrt(N))
         G = nx.grid_2d_graph(side, side)
+        # Explicitly sorts the nodes before mapping them to ensure identical ordering across every run
         mapping = {node: i for i, node in enumerate(sorted(list(G.nodes())))}
         G = nx.relabel_nodes(G, mapping)
         
         mask = torch.zeros(N, N)
+        # Iterates through every node
         for start_node in range(N):
+            # Simulates n_walks random walks from the start_node
             for _ in range(n_walks):
                 curr = start_node
+                # visits neighbors until a coin flip (np.random.rand() < p_halt) terminates the walk.
                 while True:
                     mask[start_node, curr] += 1.0
                     if np.random.rand() < p_halt: break
                     neighbors = sorted(list(G.neighbors(curr)))
                     if not neighbors: break
                     curr = np.random.choice(neighbors)
+            # Divides counts by n_walks to get probabilities.
             mask[start_node] /= max(n_walks, 1)
         return mask.to(DEVICE)
 
     def feature_map(self, x):
+        # Applies ReLU to Q and K.
         return torch.nn.functional.relu(x) + self.eps
 
     def forward(self, x):
@@ -145,8 +161,7 @@ class GRFExactAttention(nn.Module):
         # Linear Attention Calculation
         linear_kernel = q @ k.transpose(-2, -1)
         
-        # We STILL multiply by the mask explicitly here for the "Exact" version
-        # to guarantee the topology is enforced.
+        # It calculates the low-rank kernel and explicitly multiplies it element-wise by the mask. This strictly enforces the topology derived from the random walks.
         masked_kernel = linear_kernel * self.mask.unsqueeze(0).unsqueeze(0)
         
         z = 1 / (masked_kernel.sum(dim=-1, keepdim=True) + self.eps)
