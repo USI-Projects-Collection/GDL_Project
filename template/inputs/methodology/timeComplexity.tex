@@ -1,1 +1,15 @@
 \subsection{Time Complexity}
+To validate the theoretical efficiency claims of the proposed architecture, the paper conducts a hardware-agnostic analysis of computational cost. Instead of measuring wall-clock time, which can be conflated by hardware specifics (GPU/CPU differences) and implementation overhead, the methodology focuses on counting the total number of Floating Point Operations (FLOPs) required for a single forward pass of the attention mechanism.\\
+The analysis compares three distinct attention variants across a range of graph sizes (N):
+\begin{itemize}
+    \item \textbf{Unmasked Softmax Attention:} The standard $\mathcal{O}(N^2)$ mechanism, where the full N×N attention matrix is materialized.
+    \item \textbf{Unmasked Linear Attention:} An $\mathcal{O}(N)$ efficient alternative that utilizes a low-rank decomposition $\phi(Q)(\phi(K)^T V)$.
+    \item \textbf{GRF-Masked Linear Attention (Ours):} The proposed method, which approximates the topological mask using Graph Random Features. While theoretically $\mathcal{O}(N)$, this method involves constructing sparse feature matrices, introducing a constant overhead dependent on the graph sparsity and number of random walkers.
+\end{itemize}
+The theoretical FLOP counts are derived based on the matrix dimensions involved. For a hidden dimension $d$ and feature dimension $m$:
+\begin{itemize}
+    \item \textbf{Softmax Attention (Baseline):} Dominated by the $N^2$ term from $QK^\top$ and $AV$ product, roughly scaling as $\mathcal{O}(4N^2d)$.
+    \item \textbf{Linear Attention (Unmasked):} Linear in $N$, scaling as  $\mathcal{O}(4Nmd)$ due to the associativity of matrix multiplication.
+    \item \textbf{GRF-Masked Linear Attention (Ours):} Also linear in $N$, but the exact cost depends on the number of non-zero entries (NNZ) in the sparse graph random feature vectors. The complexity scales as $\mathcal{O}(4 \cdot \text{NNZ} \cdot d)$.
+\end{itemize}
+The experiment uses a 1-dimensional grid graph (a linear chain) to test scaling behavior. This topology allows for controlled testing of "local" attention, as the number of neighbors remains constant as $N$ increases.
