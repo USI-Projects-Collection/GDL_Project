@@ -57,8 +57,29 @@ The length of the report should be between 4 and 8 pages (without considering re
 % ==========================================================================
 \section{Introduction}
 
-Here you should clarify the context of your project and the problem you are dealing with. You should also make a brief summary of the main results and contributions (i.e., if you tried to replicate the results of an existing paper you should say if you were successful or not). The introduction should help the reader to follow along for the rest of the paper.
+Transformers have established themselves as a dominant architecture across various machine learning modalities, deriving their power from the attention mechanism which models complex dependencies between tokens \cite{vaswani2017attention}. However, the standard Transformer treats input data as a set, making it invariant to permutation and inherently unaware of structural dependencies, such as the connectivity in graph-structured data. To address this, \textit{Topological Masking} is often employed, where the attention mechanism is modulated by a function of the graph structure (e.g., shortest path distance or adjacency), injecting a necessary structural inductive bias \cite{ying2021do, choromanski2022rethinking}.
 
+A fundamental computational conflict arises when scaling this approach to large graphs. Standard ``Vanilla'' Softmax attention requires explicitly computing and storing an $N \times N$ attention matrix, resulting in quadratic $\mathcal{O}(N^2)$ time and space complexity. While Linear Attention mechanisms address this bottleneck by leveraging low-rank decompositions $\phi(Q)(\phi(K)^T V)$ to achieve $\mathcal{O}(N)$ complexity \cite{katharopoulos2020transformers}, they rely strictly on the associativity of matrix multiplication. Introducing a topological mask $M$ generally breaks this associativity—since $(A \times B) \odot M \neq A \times (B \odot M)$—forcing the re-materialization of the dense attention matrix and negating the efficiency gains of linear attention.
+
+In this work, we focus on the reproduction of ``Linear Transformer Topological Masking with Graph Random Features'' \cite{reid2025linear}. The authors propose a novel solution to the masking conflict by approximating the topological mask using Graph Random Features (GRFs). By decomposing the mask into sparse feature vectors derived from random walks, the method allows the mask to be fused with query and key features via a tensor product, preserving the $\mathcal{O}(N)$ complexity of linear attention while maintaining the expressivity of topological masking.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{assets/schematic_overview.png}
+    \caption{Conceptual comparison of attention mechanisms. The left panel illustrates the quadratic bottleneck of Softmax attention. The middle panel shows the efficient flow of Linear attention. The right panel demonstrates the proposed GRF method, which preserves linear complexity by fusing sparse topological features $\psi_M$ with the query/key representations.}
+    \label{fig:attention_comparison}
+\end{figure}
+
+\paragraph{Contributions and Replication Results}
+Our primary contribution is a validation of the theoretical and empirical claims presented in the original paper. We successfully implemented the proposed GRF-based masking mechanism and conducted a rigorous analysis of its computational scaling behavior.
+
+\begin{itemize}
+    \item \textbf{Time Complexity Verification:} We replicated the scaling experiment comparing Softmax, Linear, and GRF-Masked attention. Our results confirm the theoretical claims: while Softmax attention scales quadratically, exhibiting a ``computational explosion'' for $N > 8$, the GRF-Masked method maintains strict linear scaling $\mathcal{O}(N)$.
+    
+    \item \textbf{Overhead Analysis:} We quantified the overhead introduced by the GRF mechanism. While retaining the linear complexity class, we observe a constant factor increase in FLOPs compared to unmasked linear attention, attributable to the sparsity of the generated graph features.
+\end{itemize}
+
+\textbf{!!!TO DO: ADD THE OTHER TWO EXPERIMENTS RESULTS OVERVIEW!!!}
 % ==========================================================================
 % ==========================================================================
 \section{Related works}

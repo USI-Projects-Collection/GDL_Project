@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex gdl_template"] 1765192507.57795 "gdl_template.aux" "gdl_template.bbl" "gdl_template" 1765192526.44329 0
-  "./bibliography.bib" 1764858235.16224 567 567cb391a471f44f5014d24d6c64896a ""
+["bibtex gdl_template"] 1765283005.76221 "gdl_template.aux" "gdl_template.bbl" "gdl_template" 1765283052.88753 0
+  "./bibliography.bib" 1765278611.45048 2452 208adc796992b37529f955f0cd74f268 ""
   "/usr/local/texlive/2025/texmf-dist/bibtex/bst/natbib/unsrtnat.bst" 1233624470 24550 a41a6405f4de768c43e871d9fbce2bc8 ""
-  "gdl_template.aux" 1765192526.17879 3837 3610a34be17b755091edc7a18e54d062 "pdflatex"
+  "gdl_template.aux" 1765283052.65107 5527 f6089a8c9738ac64888757efb0e7cec6 "pdflatex"
   (generated)
   "gdl_template.bbl"
   "gdl_template.blg"
   (rewritten before read)
-["pdflatex"] 1765192525.28536 "/Users/raffaeleperri/Desktop/Master/3rd Semester/Graph Deep Learning/Project/GDL_Project/template/gdl_template.tex" "gdl_template.pdf" "gdl_template" 1765192526.44343 0
-  "/Users/raffaeleperri/Desktop/Master/3rd Semester/Graph Deep Learning/Project/GDL_Project/template/gdl_template.tex" 1765192509.99514 4211 38ff051d9eb1eb27e214288797a1722d ""
+["pdflatex"] 1765283051.80548 "/Users/raffaeleperri/Desktop/Master/3rd Semester/Graph Deep Learning/Project/GDL_Project/template/gdl_template.tex" "gdl_template.pdf" "gdl_template" 1765283052.88765 0
+  "/Users/raffaeleperri/Desktop/Master/3rd Semester/Graph Deep Learning/Project/GDL_Project/template/gdl_template.tex" 1765283051.63918 7500 5691ef804d01ae60f6b37c42e7bbdf9b ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc" 1254269338 2375 baa924870cfb487815765f9094cf3728 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc" 1202520719 2405 5dcf2c1b967ee25cc46c58cd52244aed ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc" 1202520719 2840 216e6e45ad352e2456e1149f28885bee ""
@@ -63,6 +63,7 @@
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx10.pfb" 1255129361 121021 1bf809ce4a594679006bd72263eba59b ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx12.pfb" 1255129361 116908 1fca96723793882c2e0160350c192fc8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmmi10.pfb" 1254269338 30388 702fae6a5f0e6e9c48a1d872b442ffcf ""
+  "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmmi6.pfb" 1254269338 31113 04b711c9a4c7f8cb4ed784c6fc4cc1c5 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmmi7.pfb" 1254269338 30789 be3ebdf20b6442cc4aaf81a81e17daf4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmmi9.pfb" 1254269338 30698 e53a423459271d6c5cdd91f7559396af ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr10.pfb" 1255129361 119235 f35b44530a1d90eb90fe15d9cba67ea0 ""
@@ -244,12 +245,13 @@
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1748101145 3345732 9a08b3e6ae571bccf4f3cd2b4b87b490 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
   "assets/replication_figure_3_exact.png" 1765191755.10262 219137 feee1c342c78e6d1bad190b6646f2177 ""
+  "assets/schematic_overview.png" 1765279707.98995 4395777 d9298ec56986b332ab8edfba8fe35190 ""
   "gdl.cls" 1764858235.16267 8227 fb1b59dd91be0399b3c0278381464c97 ""
-  "gdl_template.aux" 1765192526.17879 3837 3610a34be17b755091edc7a18e54d062 "pdflatex"
-  "gdl_template.bbl" 1765192507.65941 941 90f53a292a404355882d3745fbca1b1b "bibtex gdl_template"
-  "gdl_template.out" 1765192526.17934 3899 2a47a6b5a55d92b9315421eb3b57bd53 "pdflatex"
-  "gdl_template.tex" 1765192509.99514 4211 38ff051d9eb1eb27e214288797a1722d ""
-  "gdl_template.toc" 1765192526.17951 1708 eff8071bf0dcb680cb7fdc4b76bc978e "pdflatex"
+  "gdl_template.aux" 1765283052.65107 5527 f6089a8c9738ac64888757efb0e7cec6 "pdflatex"
+  "gdl_template.bbl" 1765283005.83953 3028 14030fb091243ba6ae6c9b9525c0315d "bibtex gdl_template"
+  "gdl_template.out" 1765283052.65186 3899 bcb84a331ef0f253c7bc86e09975d2a4 "pdflatex"
+  "gdl_template.tex" 1765283051.63918 7500 5691ef804d01ae60f6b37c42e7bbdf9b ""
+  "gdl_template.toc" 1765283052.65205 1789 c6b0669d71e52ed7dba1cff6302af560 "pdflatex"
   "inputs/implementation/PCTs.tex" 1764858235.16868 56 67f693463c6b713a94e391f953f98b55 ""
   "inputs/implementation/VITs.tex" 1764858299.91367 86 1d0592da9bf35df1f6fb60ccac9ac2b0 ""
   "inputs/implementation/implementation.tex" 1764858429.51431 1673 5af06fb24ed3e8ceb5f322a2b6736082 ""

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.5.24)  8 DEC 2025 12:15
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.5.24)  9 DEC 2025 13:24
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -852,38 +852,49 @@ File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 
 [1
 
-{/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}] (./inputs/methodology/methodolgy.tex (./inputs/methodology/timeComplexity.tex
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 5.
- (/usr/local/texlive/2025/texmf-dist/tex/latex/lm/ts1lmr.fd
-File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-)
+{/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}]
+<assets/schematic_overview.png, id=121, 2826.56pt x 1541.76pt>
+File: assets/schematic_overview.png Graphic file (type png)
+<use assets/schematic_overview.png>
+Package pdftex.def Info: assets/schematic_overview.png  used on input line 68.
+(pdftex.def)             Requested size: 241.53897pt x 131.74185pt.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <9> on input line 69.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <6> on input line 69.
 
-) (./inputs/methodology/VITs.tex) (./inputs/methodology/PCTs.tex)) (./inputs/implementation/implementation.tex (./inputs/implementation/timeComplexity.tex
+
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 77.
+(/usr/local/texlive/2025/texmf-dist/tex/latex/lm/ts1lmr.fd
+File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+) (./inputs/methodology/methodolgy.tex (./inputs/methodology/timeComplexity.tex
+
+[2
+
+{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc} <./assets/schematic_overview.png (PNG copy)>]) (./inputs/methodology/VITs.tex) (./inputs/methodology/PCTs.tex)) (./inputs/implementation/implementation.tex (./inputs/implementation/timeComplexity.tex
 LaTeX Font Info:    Font shape `T1/lmss/m/it' in size <10> not available
 (Font)              Font shape `T1/lmss/m/sl' tried instead on input line 4.
 LaTeX Font Info:    Font shape `T1/lmss/bx/it' in size <10> not available
 (Font)              Font shape `T1/lmss/bx/sl' tried instead on input line 4.
 
 
-[2
-
-{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}]) (./inputs/implementation/VITs.tex) (./inputs/implementation/PCTs.tex)) (./inputs/results/results.tex (./inputs/results/timeComplexity.tex
-<assets/replication_figure_3_exact.png, id=133, 578.16pt x 433.62pt>
+) (./inputs/implementation/VITs.tex) (./inputs/implementation/PCTs.tex)) (./inputs/results/results.tex (./inputs/results/timeComplexity.tex
+<assets/replication_figure_3_exact.png, id=146, 578.16pt x 433.62pt>
 File: assets/replication_figure_3_exact.png Graphic file (type png)
 <use assets/replication_figure_3_exact.png>
 Package pdftex.def Info: assets/replication_figure_3_exact.png  used on input line 5.
 (pdftex.def)             Requested size: 198.02815pt x 148.52057pt.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <9> on input line 6.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 6.
 
 
-) (./inputs/results/VITs.tex) (./inputs/results/PCTs.tex))
+[3 <./assets/replication_figure_3_exact.png>]) (./inputs/results/VITs.tex) (./inputs/results/PCTs.tex))
 
-[3 <./assets/replication_figure_3_exact.png>] (./gdl_template.bbl)
+
 
 [4
+
+] (./gdl_template.bbl)
+
+[5
 
 ] (./gdl_template.aux)
  ***********
@@ -891,21 +902,21 @@ LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
 Package rerunfilecheck Info: File `gdl_template.out' has not changed.
-(rerunfilecheck)             Checksum: 2A47A6B5A55D92B9315421EB3B57BD53;3899.
+(rerunfilecheck)             Checksum: BCB84A331EF0F253C7BC86E09975D2A4;3899.
  ) 
 Here is how much of TeX's memory you used:
- 29616 strings out of 473190
- 572510 string characters out of 5715800
- 922739 words of memory out of 5000000
- 52292 multiletter control sequences out of 15000+600000
+ 29643 strings out of 473190
+ 573272 string characters out of 5715800
+ 925518 words of memory out of 5000000
+ 52312 multiletter control sequences out of 15000+600000
  634988 words of font info for 88 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 102i,12n,106p,704b,552s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmmi10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmmi7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmmi9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmri10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmss10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmss12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmss9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmssbo10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsy7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmtt10.pfb>
-Output written on gdl_template.pdf (4 pages, 541077 bytes).
+ 102i,12n,106p,930b,555s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmmi10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmmi6.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmmi7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmmi9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmr9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmri10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmss10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmss12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmss9.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmssbo10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmsy7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/lm/lmtt10.pfb>
+Output written on gdl_template.pdf (5 pages, 4924311 bytes).
 PDF statistics:
- 240 PDF objects out of 1000 (max. 8388607)
- 194 compressed objects within 2 object streams
- 29 named destinations out of 1000 (max. 500000)
- 170 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 270 PDF objects out of 1000 (max. 8388607)
+ 219 compressed objects within 3 object streams
+ 36 named destinations out of 1000 (max. 500000)
+ 175 words of extra memory for PDF output out of 10000 (max. 10000000)
 
