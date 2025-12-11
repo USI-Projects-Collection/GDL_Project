@@ -13,6 +13,7 @@ BATCH_SIZE = 16
 LR = 1e-3 # Learning Rate
 EPOCHS = 20
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {DEVICE}")
 K_NEIGHBORS = 6
 VAL_SPLIT = 0.2
 

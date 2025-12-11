@@ -6,7 +6,7 @@ import * as THREE from "three";
 
 // --- CONFIGURAZIONE ---
 const NUM_POINTS = 1024;         
-const RECORD_INTERVAL = 0.1;   // 10 FPS
+const RECORD_INTERVAL = 0.01;   // 10 FPS
 const K_NEIGHBORS = 6;
 
 // Parametri del braccio
