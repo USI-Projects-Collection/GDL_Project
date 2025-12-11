@@ -89,8 +89,8 @@ class SimpleMessagePassing(nn.Module):
 
     def forward(self, x, knn_idx):
         B, N, D = x.shape
-        flat_idx = knn_idx.view(B, N * self.k).unsqueeze(-1).expand(-1, -1, D)
-        neighbors = torch.gather(x, 1, flat_idx.view(B, N * self.k, D).long()).view(B, N, self.k, D)
+        flat_idx = knn_idx.reshape(B, N * self.k).unsqueeze(-1).expand(-1, -1, D)
+        neighbors = torch.gather(x, 1, flat_idx.reshape(B, N * self.k, D).long()).reshape(B, N, self.k, D)
         return self.proj(neighbors.mean(dim=2))
 
 class UnifiedInterlacer(nn.Module):

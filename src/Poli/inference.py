@@ -6,7 +6,7 @@ from train import UnifiedInterlacer
 
 # --- CONFIG ---
 DATA_PATH = "./data/"
-MODEL_MODE = 'grf' # Deve matchare quello che hai allenato
+MODEL_MODE = 'grf'
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 K_NEIGHBORS = 6
 
