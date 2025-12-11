@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader, random_split
 import numpy as np
+import matplotlib.pyplot as plt
 import time
 import os
 
@@ -130,15 +131,21 @@ def main():
     val_size = len(dataset) - train_size
     train_ds, val_ds = random_split(dataset, [train_size, val_size])
     train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
+    val_loader = DataLoader(val_ds, batch_size=BATCH_SIZE, shuffle=False)
     
     model = UnifiedInterlacer(mode=MODEL_MODE).to(DEVICE)
     optimizer = optim.AdamW(model.parameters(), lr=LR)
     criterion = nn.MSELoss()
     
+    # Track losses
+    train_losses = []
+    val_losses = []
+    
     print(f"Start Training: {MODEL_MODE.upper()}")
     for ep in range(EPOCHS):
+        # Training
         model.train()
-        losses = []
+        epoch_train_losses = []
         for x, knn, y in train_loader:
             x, knn, y = x.to(DEVICE), knn.to(DEVICE), y.to(DEVICE)
             optimizer.zero_grad()
@@ -146,8 +153,37 @@ def main():
             loss = criterion(pred, y)
             loss.backward()
             optimizer.step()
-            losses.append(loss.item())
-        print(f"Ep {ep+1}: {np.mean(losses):.6f}") # the mean because of batches
+            epoch_train_losses.append(loss.item())
+        
+        # Validation
+        model.eval()
+        epoch_val_losses = []
+        with torch.no_grad():
+            for x, knn, y in val_loader:
+                x, knn, y = x.to(DEVICE), knn.to(DEVICE), y.to(DEVICE)
+                pred = model(x, knn)
+                loss = criterion(pred, y)
+                epoch_val_losses.append(loss.item())
+        
+        train_loss = np.mean(epoch_train_losses)
+        val_loss = np.mean(epoch_val_losses)
+        train_losses.append(train_loss)
+        val_losses.append(val_loss)
+        
+        print(f"Ep {ep+1}: Train Loss: {train_loss:.6f}, Val Loss: {val_loss:.6f}")
+
+    # Plot and save loss curves
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(1, EPOCHS + 1), train_losses, label='Training Loss', marker='o')
+    plt.plot(range(1, EPOCHS + 1), val_losses, label='Validation Loss', marker='s')
+    plt.title(f'Training and Validation Loss - {MODEL_MODE.upper()}')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss (MSE)')
+    plt.legend()
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.savefig(f'loss_plot_{MODEL_MODE}.png', dpi=150, bbox_inches='tight')
+    plt.close()
+    print(f"Loss plot saved to loss_plot_{MODEL_MODE}.png")
 
     # SAVE MODEL WEIGHTS
     torch.save({
