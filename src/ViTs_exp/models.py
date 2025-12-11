@@ -87,11 +87,11 @@ class GRFExactAttention(nn.Module):
         q, k, v = map(lambda t: t.reshape(B, N, self.num_heads, -1).transpose(1, 2), qkv)
         q = self.feature_map(q)
         k = self.feature_map(k)
-        
+
         q_graph = (q.transpose(-2, -1) @ self.mask).transpose(-2, -1)
         k_graph = (k.transpose(-2, -1) @ self.mask).transpose(-2, -1)
         q = q + 0.1 * q_graph
-        k = k + 0.1 * k_graph 
+        k = k + 0.1 * k_graph
 
         linear_kernel = q @ k.transpose(-2, -1)
         masked_kernel = linear_kernel * self.mask.unsqueeze(0).unsqueeze(0)
@@ -101,11 +101,6 @@ class GRFExactAttention(nn.Module):
         return self.to_out(out)
 
 class MAlphaAttention(nn.Module):
-    """
-    Exact M_alpha(G) Masked Linear Attention.
-    Calculates the exact matrix power series instead of using random walks.
-    M = Sum(alpha_k * W^k)
-    """
     def __init__(self, dim, num_heads, num_patches, device, order=5, decay=0.5):
         super().__init__()
         self.num_heads = num_heads
@@ -115,29 +110,20 @@ class MAlphaAttention(nn.Module):
         self.register_buffer('mask', self._generate_exact_mask(num_patches, order, decay, device))
 
     def _generate_exact_mask(self, N, order, decay, device):
-        # 1. Adjacency Matrix
         side = int(np.sqrt(N))
         G = nx.grid_2d_graph(side, side)
         mapping = {node: i for i, node in enumerate(sorted(list(G.nodes())))}
         G = nx.relabel_nodes(G, mapping)
         A = nx.to_numpy_array(G)
-        
-        # Normalize (Random Walk Normalization)
         D_inv = np.diag(1.0 / np.maximum(A.sum(axis=1), 1))
         W = D_inv @ A
-        
-        # 2. Power Series: M = I + aW + a^2W^2 ...
         M = np.eye(N)
         W_k = np.eye(N)
         coeff = 1.0
-        
-        # Approximate series up to `order` terms
         for _ in range(order):
             W_k = W_k @ W
             coeff *= decay
             M += coeff * W_k
-            
-        # Normalize mask to keep attention scale roughly 1
         M = M / M.sum(axis=1, keepdims=True)
         return torch.tensor(M, dtype=torch.float32).to(device)
 
@@ -145,19 +131,15 @@ class MAlphaAttention(nn.Module):
         return torch.nn.functional.relu(x) + self.eps
 
     def forward(self, x):
-        # Use exact mask same way as GRF
         B, N, C = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=-1)
         q, k, v = map(lambda t: t.reshape(B, N, self.num_heads, -1).transpose(1, 2), qkv)
-        
         q = self.feature_map(q)
         k = self.feature_map(k)
-        
         q_graph = (q.transpose(-2, -1) @ self.mask).transpose(-2, -1)
         k_graph = (k.transpose(-2, -1) @ self.mask).transpose(-2, -1)
         q = q + 0.1 * q_graph
-        k = k + 0.1 * k_graph 
-
+        k = k + 0.1 * k_graph
         linear_kernel = q @ k.transpose(-2, -1)
         masked_kernel = linear_kernel * self.mask.unsqueeze(0).unsqueeze(0)
         z = 1 / (masked_kernel.sum(dim=-1, keepdim=True) + self.eps)
@@ -166,10 +148,6 @@ class MAlphaAttention(nn.Module):
         return self.to_out(out)
 
 class ToeplitzAttention(nn.Module):
-    """
-    Simulated Toeplitz Masking.
-    Mask M_ij depends only on spatial distance on the grid.
-    """
     def __init__(self, dim, num_heads, num_patches, device, decay=0.8):
         super().__init__()
         self.num_heads = num_heads
@@ -181,20 +159,12 @@ class ToeplitzAttention(nn.Module):
     def _generate_toeplitz_mask(self, N, decay, device):
         side = int(np.sqrt(N))
         mask = np.zeros((N, N))
-        
         for i in range(N):
             for j in range(N):
-                # Convert flat index to (x, y)
                 xi, yi = i // side, i % side
                 xj, yj = j // side, j % side
-                
-                # Manhattan distance
                 dist = abs(xi - xj) + abs(yi - yj)
-                
-                # Exponential decay mask (Toeplitz-like structure)
                 mask[i, j] = decay ** dist
-                
-        # Normalize
         mask = mask / mask.sum(axis=1, keepdims=True)
         return torch.tensor(mask, dtype=torch.float32).to(device)
 
@@ -202,19 +172,15 @@ class ToeplitzAttention(nn.Module):
         return torch.nn.functional.relu(x) + self.eps
 
     def forward(self, x):
-        # Same symmetric injection logic for fair comparison
         B, N, C = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=-1)
         q, k, v = map(lambda t: t.reshape(B, N, self.num_heads, -1).transpose(1, 2), qkv)
-        
         q = self.feature_map(q)
         k = self.feature_map(k)
-        
         q_graph = (q.transpose(-2, -1) @ self.mask).transpose(-2, -1)
         k_graph = (k.transpose(-2, -1) @ self.mask).transpose(-2, -1)
         q = q + 0.1 * q_graph
-        k = k + 0.1 * k_graph 
-
+        k = k + 0.1 * k_graph
         linear_kernel = q @ k.transpose(-2, -1)
         masked_kernel = linear_kernel * self.mask.unsqueeze(0).unsqueeze(0)
         z = 1 / (masked_kernel.sum(dim=-1, keepdim=True) + self.eps)
@@ -224,15 +190,16 @@ class ToeplitzAttention(nn.Module):
 
 # --- 4. MODEL ---
 class ViT(nn.Module):
-    def __init__(self, patch_size, image_size, dim, depth, num_heads, dropout, mlp_dim, device, attention_type='softmax',  n_walks=50, p_halt=0.1):
+    def __init__(self, patch_size, image_size, dim, depth, num_heads, dropout, mlp_dim, device, channels=3, attention_type='softmax', n_walks=50, p_halt=0.1, num_classes=10):
         super().__init__()
         self.patch_size = patch_size
+        self.channels = channels
         num_patches = (image_size // patch_size) ** 2
-        patch_dim = 3 * patch_size ** 2
+        patch_dim = channels * patch_size ** 2
         self.patch_embed = nn.Linear(patch_dim, dim)
         self.pos_embed = nn.Parameter(torch.randn(1, num_patches, dim))
         self.layers = nn.ModuleList([])
-        
+
         for _ in range(depth):
             if attention_type == 'softmax':
                 attn = SoftmaxAttention(dim, num_heads)
@@ -241,10 +208,10 @@ class ViT(nn.Module):
             elif attention_type == 'grf':
                 attn = GRFExactAttention(dim, num_heads, num_patches, n_walks, p_halt, device)
             elif attention_type == 'm_alpha':
-                attn = MAlphaAttention(device, dim, num_heads, num_patches)
+                attn = MAlphaAttention(dim, num_heads, num_patches, device)
             elif attention_type == 'toeplitz':
-                attn = ToeplitzAttention(dim, device, num_heads, num_patches)
-            
+                attn = ToeplitzAttention(dim, num_heads, num_patches, device)
+
             self.layers.append(nn.ModuleList([
                 nn.LayerNorm(dim),
                 attn,
@@ -254,10 +221,11 @@ class ViT(nn.Module):
                     nn.Linear(mlp_dim, dim), nn.Dropout(dropout)
                 )
             ]))
-        self.mlp_head = nn.Sequential(nn.LayerNorm(dim), nn.Linear(dim, 10))
+        self.mlp_head = nn.Sequential(nn.LayerNorm(dim), nn.Linear(dim, num_classes))
+
     def forward(self, img):
         p = self.patch_size
-        x = img.unfold(2, p, p).unfold(3, p, p).reshape(img.shape[0], -1, 3 * p * p)
+        x = img.unfold(2, p, p).unfold(3, p, p).reshape(img.shape[0], -1, self.channels * p * p)
         x = self.patch_embed(x)
         B, N, _ = x.shape
         x += self.pos_embed[:, :N]

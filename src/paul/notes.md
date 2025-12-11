@@ -58,3 +58,37 @@ Imagenet-1k and iNatuarlist2021 are quite large. Might lead to problems
 ### Architecture, hyperparameters and training details
 
 **ImageNet**: Batch size 4096. This might not be feasible for us. Also running it for 90 epochs probably takes an eternity.
+
+
+
+## Configurations
+
+Dataset `FashionMNIST`
+
+```python
+DATASET = 'FashionMNIST'
+BATCH_SIZE = 128
+LEARNING_RATE = 1e-3
+EPOCHS = 30
+IMAGE_SIZE = 32
+PATCH_SIZE = 4
+DIM = 64
+DEPTH = 2
+NUM_HEADS = 4
+MLP_DIM = 128
+DROPOUT = 0.1
+```
+
+### Results
+
+```txt
+[TABLE 1 COMPLETE RESULT - FashionMNIST]
+Method                    Accuracy   Type
+--------------------------------------------------
+Unmasked Softmax          86.54      Exact Dense
+Toeplitz-masked Linear    88.03      Structure Bias
+M_alpha(G)-masked         87.21      Exact Topo
+GRF-masked Linear         86.99      Stochastic Topo
+Unmasked Linear           86.36      Baseline
+```
+
