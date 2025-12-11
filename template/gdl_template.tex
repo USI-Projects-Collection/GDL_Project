@@ -84,10 +84,19 @@ Our primary contribution is a validation of the theoretical and empirical claims
 % ==========================================================================
 \section{Related works}
 
-Give a brief summary of (some) existing methods that are related to you project. For instance, you can refer to~\citet{reid2025linear}, or simply~\cite{reid2025linear}, for introducing Message Passing Neural Networks. In this section it is important to provide readers references to the current state of the art and the foundations of the presented method. 
+\subsubsection{Standard and Topological Attention}
+The standard self-attention mechanism, introduced by \citet{vaswani2017attention}, computes a dense $N \times N$ attention matrix $A = \text{softmax}(QK^\top / \sqrt{d})$. While highly effective at modeling global dependencies, this approach incurs quadratic $\mathcal{O}(N^2)$ time and space complexity, prohibiting its use on long sequences or large graphs.
+To adapt Transformers to graph-structured data, \textit{topological masking} is often employed to inject structural inductive bias \cite{ying2021do}. This typically involves modulating the attention scores with a mask $M(\mathcal{G})$ derived from the graph topology (e.g., shortest path distances), forcing tokens to attend preferentially to their structural neighbors. However, applying such masks generally requires materializing the full $N \times N$ matrix, maintaining the prohibitive quadratic bottleneck.
 
-N.B.: When referencing a different approach, it is not necessary to provide a detailed description, only one/two brief sentences are enough. The interested readers can eventually read the referenced work. 
+\subsubsection{Linear Attention and The Masking Conflict}
+To address the scalability limits of standard attention, \textit{Linear Attention} mechanisms have been proposed \cite{katharopoulos2020transformers, choromanski2020rethinking}. These methods replace the softmax kernel with a feature map decomposition $\phi(\cdot)$, allowing the computation to be reordered via associativity: $D^{-1}\phi(Q)(\phi(K)^\top V)$. This reduces complexity to $\mathcal{O}(N)$.
+However, as noted in the foundational literature, introducing an element-wise topological mask $M$ breaks this associativity, i.e., $(A \times B) \odot M \neq A \times (B \odot M)$. Consequently, standard linear attention methods are generally incompatible with flexible topological masking without reverting to quadratic complexity.
 
+\subsubsection{Efficient Masking Approaches}
+Several approaches have attempted to reconcile efficiency with masking, though often with restrictions on graph topology.
+\citet{luo2021stable} and \citet{choromanski2022rethinking} proposed using Toeplitz matrices and the Fast Fourier Transform (FFT) to implement masking in $\mathcal{O}(N \log N)$ time. While an improvement over $\mathcal{O}(N^2)$, these methods are largely restricted to highly structured graphs like grids or trees and do not generalize easily to arbitrary topologies.
+Other methods, such as stochastic positional encoding \cite{liutkus2021relative}, achieve linear complexity but are similarly limited to sequence data (1D grids).
+The method reproduced in this work \cite{reid2025linear} distinguishes itself by supporting general graphs with strict $\mathcal{O}(N)$ complexity via a randomized low-rank decomposition of the mask itself.
 % ==========================================================================
 % ==========================================================================
 \input{inputs/methodology/methodolgy.tex}
