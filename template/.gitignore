@@ -324,3 +324,53 @@ TSWLatexianTemp*
 # option is specified. Footnotes are the stored in a file with suffix Notes.bib.
 # Uncomment the next line to have this generated file ignored.
 #*Notes.bib
+##--------------------------------------------------------
+## LaTeX intermediate files
+##--------------------------------------------------------
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.brf
+*.idx
+*.ilg
+*.ind
+*.ist
+*.lof
+*.lot
+*.log
+*.nav
+*.out
+*.snm
+*.synctex.gz
+*.toc
+*.xdv
+*.xml
+
+# TikZ / PGFPlots externalization
+*.tikz
+*.pgf-plot.gnuplot
+*.gnuplot
+
+## glossaries
+*.acn
+*.acr
+*.alg
+*.glg
+*.glo
+*.gls
+
+## listings
+*.lol
+
+## makeidx
+*.maf
+*.mtc
+*.mtc0
+
+## minted (if used)
+_minted*/
+
+## latexmk
+*.fls
+*.fdb_latexmk
