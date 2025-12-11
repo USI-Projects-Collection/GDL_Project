@@ -12,7 +12,7 @@ MODEL_MODE = 'grf'  # 'grf', 'baseline', 'mp'
 DATA_PATH = "./data/"
 BATCH_SIZE = 16
 LR = 1e-3 # Learning Rate
-EPOCHS = 20
+EPOCHS = 500
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {DEVICE}")
 K_NEIGHBORS = 6
@@ -25,7 +25,7 @@ class RobotArmDataset(Dataset):
             raise FileNotFoundError(f"File {points_path} not found.")
         self.points = np.load(points_path).astype(np.float32)
         self.knn = np.load(knn_path).astype(np.int64)
-        
+
         # Normalization stats
         self.mean = np.mean(self.points, axis=(0, 1))
         self.std = np.std(self.points, axis=(0, 1))
@@ -45,7 +45,7 @@ class LinearAttention(nn.Module):
         super().__init__()
         self.to_qkv = nn.Linear(dim, dim * 3, bias=False)
         self.to_out = nn.Linear(dim, dim)
-        
+
     def forward(self, x):
         B, N, D = x.shape
         q, k, v = self.to_qkv(x).chunk(3, dim=-1)
@@ -71,15 +71,15 @@ class TopologicalGRFLayer(nn.Module):
         indices = torch.stack([(knn_idx + batch_off).view(-1), (src + batch_off).view(-1)])
         values = torch.ones(indices.shape[1], device=x.device)
         adj = torch.sparse_coo_tensor(indices, values, (B*N, B*N))
-        
+
         q, k, v = self.to_qkv(x).chunk(3, dim=-1)
         v_f, k_f = v.view(B*N, D), k.view(B*N, D)
-        
+
         # Random Walk Diffusion
         for _ in range(self.hops):
             v_f = torch.sparse.mm(adj, v_f) / (self.k + 1e-6)
             k_f = torch.sparse.mm(adj, k_f) / (self.k + 1e-6)
-            
+
         attn = (q * k_f.view(B, N, D)).sum(dim=-1, keepdim=True)
         return self.to_out(attn * v_f.view(B, N, D))
 
@@ -96,32 +96,41 @@ class SimpleMessagePassing(nn.Module):
         return self.proj(neighbors.mean(dim=2))
 
 class UnifiedInterlacer(nn.Module):
-    def __init__(self, mode='grf', input_dim=3, embed_dim=64):
+    def __init__(self, mode='grf', input_dim=3, embed_dim=128, num_layers=5):
         super().__init__()
         self.mode = mode
+        self.num_layers = num_layers
         self.embedding = nn.Linear(input_dim, embed_dim)
-        self.norm1 = nn.LayerNorm(embed_dim)
-        self.norm2 = nn.LayerNorm(embed_dim)
-        self.norm3 = nn.LayerNorm(embed_dim)
         
+        # Create layer norms for each layer (2 per block: graph + attention)
+        self.norms = nn.ModuleList([nn.LayerNorm(embed_dim) for _ in range(num_layers * 2)])
+        
+        # Create graph layers (GRF, MP, or Identity based on mode)
         if mode == 'grf':
-            self.l1 = TopologicalGRFLayer(embed_dim, K_NEIGHBORS)
-            self.l3 = TopologicalGRFLayer(embed_dim, K_NEIGHBORS)
+            self.graph_layers = nn.ModuleList([TopologicalGRFLayer(embed_dim, K_NEIGHBORS) for _ in range(num_layers)])
         elif mode == 'mp':
-            self.l1 = SimpleMessagePassing(embed_dim, K_NEIGHBORS)
-            self.l3 = SimpleMessagePassing(embed_dim, K_NEIGHBORS)
+            self.graph_layers = nn.ModuleList([SimpleMessagePassing(embed_dim, K_NEIGHBORS) for _ in range(num_layers)])
         else:
-            self.l1 = nn.Identity()
-            self.l3 = nn.Identity()
-            
-        self.l2 = LinearAttention(embed_dim)
+            self.graph_layers = nn.ModuleList([nn.Identity() for _ in range(num_layers)])
+        
+        # Create attention layers
+        self.attn_layers = nn.ModuleList([LinearAttention(embed_dim) for _ in range(num_layers)])
+        
         self.head = nn.Linear(embed_dim, 3)
 
     def forward(self, x, knn):
         h = self.embedding(x)
-        h = h + (self.l1(self.norm1(h), knn) if self.mode != 'baseline' else self.norm1(h))
-        h = h + self.l2(self.norm2(h))
-        h = h + (self.l3(self.norm3(h), knn) if self.mode != 'baseline' else self.norm3(h))
+        
+        for i in range(self.num_layers):
+            # Graph layer
+            if self.mode != 'baseline':
+                h = h + self.graph_layers[i](self.norms[i * 2](h), knn)
+            else:
+                h = h + self.norms[i * 2](h)
+            
+            # Attention layer
+            h = h + self.attn_layers[i](self.norms[i * 2 + 1](h))
+        
         return self.head(h)
 
 # --- MAIN ---
@@ -132,15 +141,15 @@ def main():
     train_ds, val_ds = random_split(dataset, [train_size, val_size])
     train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
     val_loader = DataLoader(val_ds, batch_size=BATCH_SIZE, shuffle=False)
-    
+
     model = UnifiedInterlacer(mode=MODEL_MODE).to(DEVICE)
     optimizer = optim.AdamW(model.parameters(), lr=LR)
     criterion = nn.MSELoss()
-    
+
     # Track losses
     train_losses = []
     val_losses = []
-    
+
     print(f"Start Training: {MODEL_MODE.upper()}")
     for ep in range(EPOCHS):
         # Training
@@ -154,7 +163,7 @@ def main():
             loss.backward()
             optimizer.step()
             epoch_train_losses.append(loss.item())
-        
+
         # Validation
         model.eval()
         epoch_val_losses = []
@@ -164,12 +173,12 @@ def main():
                 pred = model(x, knn)
                 loss = criterion(pred, y)
                 epoch_val_losses.append(loss.item())
-        
+
         train_loss = np.mean(epoch_train_losses)
         val_loss = np.mean(epoch_val_losses)
         train_losses.append(train_loss)
         val_losses.append(val_loss)
-        
+
         print(f"Ep {ep+1}: Train Loss: {train_loss:.6f}, Val Loss: {val_loss:.6f}")
 
     # Plot and save loss curves
@@ -179,18 +188,28 @@ def main():
     plt.title(f'Training and Validation Loss - {MODEL_MODE.upper()}')
     plt.xlabel('Epoch')
     plt.ylabel('Loss (MSE)')
+    plt.yscale('log')
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.savefig(f'loss_plot_{MODEL_MODE}.png', dpi=150, bbox_inches='tight')
     plt.close()
     print(f"Loss plot saved to loss_plot_{MODEL_MODE}.png")
 
-    # SAVE MODEL WEIGHTS
+    # Save losses to numpy file
+    np.savez(f'losses_{MODEL_MODE}.npz', 
+             train_losses=np.array(train_losses), 
+             val_losses=np.array(val_losses))
+    print(f"Losses saved to losses_{MODEL_MODE}.npz")
+    print()
+
+    # SAVE MODEL WEIGHTS (include losses in checkpoint)
     torch.save({
         'model_state_dict': model.state_dict(),
         'mean': dataset.mean,
         'std': dataset.std,
-        'mode': MODEL_MODE
+        'mode': MODEL_MODE,
+        'train_losses': train_losses,
+        'val_losses': val_losses
     }, f"model_{MODEL_MODE}.pth")
     print(f"Model saved to model_{MODEL_MODE}.pth")
 
