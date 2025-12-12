@@ -1,1 +1,50 @@
-\subsection{VITS: Vision--Image Tasks (Graph + Image Integration) \& Ablation Studies}
+\subsection{Vision Transformers (ViTs)}
+We re-implemented the ViT pipeline using PyTorch to reproduce the findings of the original paper on a smaller scale. 
+While the original work utilized large-scale datasets like \textit{ImageNet}, \textit{iNaturalist}, \textit{Places365}, we adapted the experimental setup to accessible, lower-resolution benchmarks to verify the algorithmic properties within a constrained computational budget.
+
+\subsubsection{\textbf{Datasets:}}
+We evaluated the method on three standard image classification datasets:
+\begin{itemize}
+    \item \textbf{CIFAR-10:} Consisting of 60,000, $32 \times 32$ color images in 10 classes.
+    \item \textbf{CIFAR-100:} Similar to CIFAR-10 but with 100 classes.
+    \item \textbf{FashionMNIST:} Consisting of 60,000 $28 \times 28$ grayscale images in 10 classes.
+\end{itemize}
+
+\subsubsection{\textbf{Hyperparameters:}}
+Hyperparameters were chosen to accommodate the smaller model capacity required for these datasets while maintaining the relative structure of the original experiments.
+
+\begin{table}[h]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccccc}
+    \toprule
+    \textbf{Hyperparameter} & \textbf{\shortstack{CIFAR-10\\(15 ep)}} & \textbf{\shortstack{CIFAR-100\\(30 ep)}} & \textbf{\shortstack{CIFAR-10\\(30 ep)}} & \textbf{\shortstack{FashionMNIST\\(10 ep)}} & \textbf{\shortstack{CIFAR-10\\(Scaled)}} \\
+    \midrule
+    Num. layers & 2 & 2 & 2 & 2 & 4 \\
+    Num. heads & 4 & 4 & 4 & 4 & 4 \\
+    Num. patches & $8 \times 8$ & $8 \times 8$ & $8 \times 8$ & $8 \times 8$ & $10 \times 10$ \\
+    Image Size & $32 \times 32$ & $32 \times 32$ & $32 \times 32$ & $32 \times 32$ & $42 \times 42$ \\
+    Hidden size & 64 & 64 & 64 & 64 & 64 \\
+    MLP dim. & 128 & 128 & 128 & 128 & 128 \\
+    Optimiser & Adam & Adam & Adam & Adam & Adam \\
+    Epochs & 15 & 30 & 30 & 10 & 15 \\
+    Learning rate & $1 \times 10^{-3}$ & $1 \times 10^{-3}$ & $1 \times 10^{-3}$ & $1 \times 10^{-3}$ & $1 \times 10^{-3}$ \\
+    Batch size & 128 & 128 & 128 & 128 & 64 \\
+    $\phi(\cdot)$ & ReLU & ReLU & ReLU & ReLU & ReLU \\
+    Num. walks ($n$) & 50 & 50 & 50 & 50 & 100 \\
+    $p_{halt}$ & 0.1 & 0.1 & 0.1 & 0.1 & 0.1 \\
+    \bottomrule
+\end{tabular}%
+}
+\caption{Architecture and training hyperparameters for all experimental runs.}
+\label{tab:hyperparameters}
+\end{table}
+
+\subsubsection{\textbf{Experimental Setup:}}
+The experiments were conducted on a single GPU environment (CUDA-enabled). The pipeline involved training five distinct model variants (Softmax, Toeplitz, $M_{\alpha}$, GRF, Unmasked Linear) from scratch for each dataset. We utilized a custom GRFExactAttention module that pre-computes random walks on a NetworkX grid graph and registers them as buffers in the PyTorch model.
+
+\subsubsection{\textbf{Computational Requirements:}}
+Due to the downscaled input resolution ($32 \times 32$) and shallow architecture (2-4 layers), the computational load was lightweight respect to the original ViT experiments.
+\begin{itemize}
+    \item \textbf{Training Time:} ...To write
+\end{itemize}

@@ -1,1 +1,16 @@
-\subsection{ViTs}
+\subsection{Vision Transformers (ViTs)}
+This section outlines the application of topological masking to Vision Transformers (ViTs), following the method proposed in the original paper. 
+In a standard ViT, an image is divided into a sequence of fixed-size patches. To apply topological masking, we structure these patches as nodes in a graph $\mathcal{G}$, specifically a 2D grid graph where nodes are connected if they are spatial neighbors in the image.
+
+The core objective is to modulate the attention mechanism $A_{ij}$ between tokens (patches) $i$ and $j$ using a topological mask $M(\mathcal{G})_{ij}$, which encodes the structural relationship between them. 
+While standard softmax attention requires $\mathcal{O}(N^2)$ complexity to apply this mask explicitly, the Graph Random Features (GRF) method allows for an implicit, efficient approximation compatible with linear attention.
+
+For our experiments, we implemented several attention variants to evaluate the effectiveness of GRFs:
+\begin{itemize}
+    \item \textbf{Unmasked Softmax:} The standard $\mathcal{O}(N^2)$ attention mechanism used as a high-accuracy baseline.
+    \item \textbf{Unmasked Linear:} An $\mathcal{O}(N)$ efficiency baseline using the ReLU feature map $\phi(\cdot)=\text{ReLU}(\cdot)$ without any topological information.
+    \item \textbf{Toeplitz-masked Linear:} An $\mathcal{O}(N \log N)$ baseline specific to grid graphs, where the mask decays based on the Manhattan distance between patches.
+    \item \textbf{$M_{\alpha}(\mathcal{G})$-masked Linear:} An "exact" masking baseline that uses an explicit power series of the weighted adjacency matrix W to modulate attention. This represents the asymptotic limit of the GRF method as the number of random walkers $n \rightarrow \infty$.
+    \item \textbf{GRF-masked Linear (Ours):} The proposed method where the topological mask is approximated stochastically. We simulate n random walks starting from each patch node on the grid graph. These walks define sparse feature vectors $\hat{\phi}_{\mathcal{G}}(v_i)$, which are used to construct the query and key feature matrices implicitly.
+\end{itemize}
+Since the grid graph structure is fixed for all images of the same resolution, the random walks and resulting sparse features are pre-computed and frozen before training, ensuring efficiency.

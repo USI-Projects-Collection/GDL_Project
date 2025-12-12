@@ -85,7 +85,7 @@ Our primary contribution is a validation of the theoretical and empirical claims
 \section{Related works}
 
 \subsubsection{Standard and Topological Attention}
-The standard self-attention mechanism, introduced by \citet{vaswani2017attention}, computes a dense $N \times N$ attention matrix $A = \text{softmax}(QK^\top / \sqrt{d})$. While highly effective at modeling global dependencies, this approach incurs quadratic $\mathcal{O}(N^2)$ time and space complexity, prohibiting its use on long sequences or large graphs.
+The standard self-attention mechanism, introduced by \cite{vaswani2017attention}, computes a dense $N \times N$ attention matrix $A = \text{softmax}(QK^\top / \sqrt{d})$. While highly effective at modeling global dependencies, this approach incurs quadratic $\mathcal{O}(N^2)$ time and space complexity, prohibiting its use on long sequences or large graphs.
 To adapt Transformers to graph-structured data, \textit{topological masking} is often employed to inject structural inductive bias \cite{ying2021do}. This typically involves modulating the attention scores with a mask $M(\mathcal{G})$ derived from the graph topology (e.g., shortest path distances), forcing tokens to attend preferentially to their structural neighbors. However, applying such masks generally requires materializing the full $N \times N$ matrix, maintaining the prohibitive quadratic bottleneck.
 
 \subsubsection{Linear Attention and The Masking Conflict}
@@ -94,7 +94,7 @@ However, as noted in the foundational literature, introducing an element-wise to
 
 \subsubsection{Efficient Masking Approaches}
 Several approaches have attempted to reconcile efficiency with masking, though often with restrictions on graph topology.
-\citet{luo2021stable} and \citet{choromanski2022rethinking} proposed using Toeplitz matrices and the Fast Fourier Transform (FFT) to implement masking in $\mathcal{O}(N \log N)$ time. While an improvement over $\mathcal{O}(N^2)$, these methods are largely restricted to highly structured graphs like grids or trees and do not generalize easily to arbitrary topologies.
+\cite{luo2021stable} and \cite{choromanski2022rethinking} proposed using Toeplitz matrices and the Fast Fourier Transform (FFT) to implement masking in $\mathcal{O}(N \log N)$ time. While an improvement over $\mathcal{O}(N^2)$, these methods are largely restricted to highly structured graphs like grids or trees and do not generalize easily to arbitrary topologies.
 Other methods, such as stochastic positional encoding \cite{liutkus2021relative}, achieve linear complexity but are similarly limited to sequence data (1D grids).
 The method reproduced in this work \cite{reid2025linear} distinguishes itself by supporting general graphs with strict $\mathcal{O}(N)$ complexity via a randomized low-rank decomposition of the mask itself.
 % ==========================================================================
