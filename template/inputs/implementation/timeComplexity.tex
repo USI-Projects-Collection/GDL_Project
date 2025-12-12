@@ -1,8 +1,8 @@
 \subsection{Time Complexity}
 To verify the scalability claims, we implemented a standalone Python simulation to replicate Figure 3 from the original paper\cite{reid2025linear}. We did not rely on the authors' training code for this experiment; instead, we wrote a custom script to calculate theoretical FLOP counts and simulate the random walk sparsity exactly as described in the methodology.
-\subsubsection{\textbf{Datasets:}}
+\subsubsection*{\textbf{Datasets:}}
 For this specific experiment, synthetic data was used. We procedurally generated 1-dimensional grid graphs (linear chains) with the number of nodes N ranging from $2^0$ (1 node) to $2^{12}$ (4096 nodes). This covers the range from trivial graphs to those large enough to demonstrate the divergence between quadratic and linear scaling.
-\subsubsection{\textbf{Hyperparameters:}}
+\subsubsection*{\textbf{Hyperparameters:}}
 We adhered strictly to the hyperparameters reported in the paper to ensure an exact replication:
 \begin{itemize}
     \item Hidden Dimension ($d$): 8
@@ -11,12 +11,12 @@ We adhered strictly to the hyperparameters reported in the paper to ensure an ex
     \item Walk terminal probability ($p_{halt}$): 0.5
 \end{itemize}
 These small dimensions ($d=m=8$) were likely chosen by the authors to isolate the scaling behavior ($N$) from the overhead of large feature vectors.
-\subsubsection{\textbf{Experimental setup:}}
+\subsubsection*{\textbf{Experimental setup:}}
 The experiment was implemented in a Python script (\texttt{time\_complexity\_exp.py}) using NumPy.
 \begin{itemize}
     \item \textbf{Deterministic Counting:} For Softmax and Standard Linear attention, FLOPs were calculated using the direct analytical formulas ($4N^2d$ and $4Nmd$ respectively).
     \item \textbf{Stochastic Simulation:} For the GRF-Masked variant, the cost depends on the sparsity of the generated features. To measure this, we implemented a \texttt{simulate\_unique\_visits} function. This function simulates $n=4$ random walkers starting from every node in the 1D grid. It tracks the set of unique nodes visited by the ensemble of walkers to determine the number of non-zero entries (NNZ) that would exist in the sparse feature matrix.
     \item \textbf{Variance Handling:} Because the random walks are stochastic, we averaged the unique visit counts over 10 independent trials for each graph size $N$.
 \end{itemize}
-\subsubsection{\textbf{Computational requirements:}}
+\subsubsection*{\textbf{Computational requirements:}}
 Since this experiment calculates theoretical operations rather than training a neural network, the computational cost was negligible. The simulation runs in seconds on a standard consumer CPU (e.g., Apple Silicon M1 or Intel i7) and requires minimal RAM (<1GB). No GPU resources were required for this specific validation step.

@@ -2,7 +2,7 @@
 
 To reproduce the comparative performance and ablation experiments, we developed a custom implementation of the Vision Transformer pipeline in PyTorch. The authors' original code was not available, thus we implemented the five attention variants (Softmax, Linear, Toeplitz, Exact $\mathbf{M}_{\alpha}$ and GRF) from scratch to verify the algorithmic description provided in the paper \cite{reid2025linear}. While the original work utilized large-scale datasets like \textit{ImageNet}, \textit{iNaturalist}, \textit{Places365}, we adapted the experimental setup to accessible, lower-resolution benchmarks to verify the algorithmic properties within a constrained computational budget.
 
-\subsubsection{\textbf{Datasets: }} We evaluated the method on three standard image classification datasets:
+\subsubsection*{\textbf{Datasets: }} We evaluated the method on three standard image classification datasets:
 \begin{itemize}
     \item \textbf{CIFAR-10:} Consisting of 60,000, $32 \times 32$ color images in 10 classes.
     \item \textbf{CIFAR-100:} Similar to CIFAR-10 but with 100 classes.
@@ -10,7 +10,7 @@ To reproduce the comparative performance and ablation experiments, we developed 
 \end{itemize}
 All the datasets are available via the \texttt{torchvision.datasets} module.
 
-\subsubsection{\textbf{Hyperparameters: }}
+\subsubsection*{\textbf{Hyperparameters: }}
 Due to computational restraints, we scaled down the architecture significantly compared to the ViT-B/16 \cite{dosovitskiy2020image} used in the original paper\cite{reid2025linear}. Hyperparameters (Table~\ref{tab:hyperparameters}) were chosen to accommodate the smaller model capacity required for these datasets while maintaining the relative structure of the original experiments.
 
 \begin{table}[H]
@@ -41,10 +41,10 @@ Due to computational restraints, we scaled down the architecture significantly c
 \end{table}
 \paragraph{Ablation Studies:} For the ablation study, we varied $n \in \{1, 10, 100, 1000\}$ and set $p_{halt}=0.5$ to strictly replicate the convergence setup described in the original appendix\cite{reid2025linear}.
 
-\subsubsection{\textbf{Experimental Setup:}}
+\subsubsection*{\textbf{Experimental Setup:}}
 The experiments were conducted on single GPUs (\textit{Nvidia T4, P100}) environments (\textit{CUDA-enabled}). The pipeline involved training five distinct model variants (Softmax, Toeplitz, $\mathbf{M}_{\alpha}$, GRF, Unmasked Linear) from scratch for each dataset. We utilized a custom \texttt{GRFExactAttention} module that pre-computes random walks on a \texttt{NetworkX} grid graph and registers them as buffers in the \texttt{PyTorch} model.
 
-\subsubsection{\textbf{Computational Requirements:}}
+\subsubsection*{\textbf{Computational Requirements:}}
 Due to the downscaled input resolution ($32 \times 32$) and shallow architecture (2-4 layers), the computational load was lightweight respect to the original ViT experiments.
 \begin{itemize}
     \item \textbf{Training Time:} approximately 17 seconds per epoch on the GPU used.

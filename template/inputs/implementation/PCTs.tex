@@ -1,6 +1,6 @@
 \subsection{PCTs: Point Cloud Temporal State prediction}
 
-\subsubsection{\textbf{Datasets:}}
+\subsubsection*{\textbf{Datasets:}}
 Given the unavailability of the original hardware setup (RGB-D cameras capturing 32k particles), we generated a synthetic dataset using a lightweight, physics-based 3D simulation developed in React and Three.js.
 The simulation models a robotic arm with a kinematic chain consisting of a base, two rigid links, and a gripper. We sampled $N$ points uniformly from the surface of the arm meshes at each frame while recording sinusoidal movements of varying frequencies on the joints.
 A critical implementation detail was the \textbf{sampling rate}. Initial experiments with high frame rates (e.g., 60 FPS) resulted in negligible displacement between frames ($P_{t+1} \approx P_t$), allowing the Baseline model to achieve near-zero loss by simply copying the input. We adjusted the recording interval to $0.2s - 0.5s$, creating significant displacements that necessitate learning the underlying physics. We generated training sequences of 500 frames for point counts $N \in \{1024, 2048\}$.
@@ -12,7 +12,7 @@ A critical implementation detail was the \textbf{sampling rate}. Initial experim
     \label{fig:simulation}
 \end{figure}
 
-\subsubsection{\textbf{Hyperparameters:}}
+\subsubsection*{\textbf{Hyperparameters:}}
 We trained all models using the Adam optimizer with a learning rate of $1e-3$ for 100 epochs and a batch size of 16. To ensure a fair comparison, all variants (Baseline, MP, GRF) share the same backbone architecture:
 \begin{itemize}
     \item \textbf{Embedding Dimension:} 68
@@ -25,7 +25,7 @@ Specific hyperparameters for the topological models were set to test the robustn
     \item \textbf{GRF Hops:} $5$ (To allow wider diffusion beyond the limited $k$)
 \end{itemize}
 
-\subsubsection{\textbf{Experimental Setup:}}
+\subsubsection*{\textbf{Experimental Setup:}}
 We implemented a modular PyTorch architecture (Figure~\ref{fig:architecture}) for the \textbf{Interlacer}. The model accepts a configuration flag to switch between `Baseline` (Linear Attention), `MP` (Simple Message Passing on K-NN), and `GRF` (Topological Masking with Random Walks).
 
 \begin{figure}[H]
@@ -40,6 +40,6 @@ For the GRF implementation, we compute the sparse mask approximation dynamically
 To evaluate performance without a neural renderer (SSIM), we introduced a geometric proxy metric: \texttt{ACCURACY\_THRESHOLD}. We define a prediction as "accurate" if the Euclidean distance between a predicted point and its ground truth counterpart is below a strict threshold (e.g., $0.1$ units). This allows us to quantify how long the model can maintain the structural integrity of the robot before the simulation diverges.
 
 
-\subsubsection{\textbf{Computational Requirements:}}
+\subsubsection*{\textbf{Computational Requirements:}}
 We utilized a standard GPU environment (Colab T4). The training time for the autoregressive setup (3-step rollout) was approximately $1$ minute per epoch.
 It is important to note that the theoretical $\mathcal{O}(N)$ advantage of GRF over the Baseline becomes strictly necessary at the scale of the original paper ($N \approx 30,000$). For our scale ($N \le 4096$), the quadratic Baseline remains computationally tractable, and the GRF method introduces a constant overhead due to sparse matrix construction in Python, resulting in slightly higher wall-clock training times despite its linear asymptotic complexity.
