@@ -1,1 +1,27 @@
 \subsection{PCTS: Point Cloud Temporal State prediction}
+
+We evaluated the three models by performing "closed-loop" rollouts: feeding the model's own predictions back as input for 10 consecutive timesteps and measuring the degradation of the robotic arm's structure. Figure \ref{fig:rollout_accuracy} illustrates the Accuracy retention over time. 
+
+The results align with the topological hierarchy proposed:
+
+\begin{enumerate}
+    \item \textbf{Baseline (Blue):} Shows the fastest degradation. Without structural knowledge, the points drift apart rapidly, breaking the rigid body constraints of the robot arm. The accuracy drops to near zero within 3-4 steps.
+
+    \item \textbf{Message Passing (Black):} Performs significantly better than the baseline. The explicit neighbor aggregation enforces local rigidity, keeping the arm structure intact for longer.
+
+    \item \textbf{GRF Interlacer (Red):} Demonstrates the highest stability. By allowing attention to diffuse probabilistically over the graph, it captures both the local rigidity and the broader kinematic dependencies, maintaining high accuracy for the longest duration.
+\end{enumerate}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{../src/Poli/data/output.png}
+    \caption{Accuracy plot comparing Baseline, MP, and GRF over rollout steps}
+    \label{fig:rollout_accuracy}
+\end{figure}
+
+\textbf{Metric Analysis.} 
+Unlike the SSIM metric in the original paper (which decays from $\sim 0.8$ to $\sim 0.6$), our accuracy metric drops from $100\%$ to $0\%$. This is due to the binary nature of our Threshold Metric: once the accumulated error pushes a point beyond the threshold distance (drift), it is marked as a "miss". However, the \textit{relative ranking} of the models is preserved, confirming the reproduction's success.
+
+\textbf{Scalability and Physics.}
+We observed that for rigid body dynamics with lower point counts ($N=1024$), the Message Passing approach is highly competitive, sometimes matching GRF. This is expected, as rigid constraints are strictly local. The specific advantage of GRF—handling complex, long-range deformations via random walks—is most prominent in the high-density ($N \ge 30k$) fluid dynamics tasks presented in the original work. Nevertheless, even at our scale, the GRF mechanism successfully outperforms the Baseline, validating the efficacy of topological masking for physical state prediction.

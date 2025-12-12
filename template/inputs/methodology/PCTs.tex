@@ -1,1 +1,15 @@
 \subsection{PCTS: Point Cloud Temporal State prediction}
+
+In the domain of robotics and physical dynamics, the paper applies topological masking to the task of High-Density Visual Particle Dynamics (HD-VPD). The objective is to predict the future state of a point cloud $P_{t+1}$ given the current state $P_t$, modeling the physical interactions of a robotic system.
+
+To replicate this experiment, we adopt the \textbf{Interlacer} architecture described in \cite{reid2025linear}. This architecture alternates between Global Layers (standard linear attention capturing long-range dependencies) and Local Layers (capturing fine-grained geometric structure). We investigate three variations of the Local Layer to validate the efficacy of Graph Random Features:
+
+\begin{itemize}
+    \item \textbf{Baseline (Unmasked PCT):} The local layer is replaced by an identity mapping or standard global attention. This model treats the point cloud as a set, ignoring the explicit topology, effectively relying solely on global context.
+    
+    \item \textbf{MP Interlacer (Message Passing):} This represents the standard GNN approach. The local layer explicitly aggregates features from the $k$-nearest neighbors. While accurate for rigid structures, it is computationally expensive and limited to immediate neighborhoods.
+    
+    \item \textbf{GRF Interlacer (Ours/Reproduced):} The local layer utilizes Graph Random Features. By sampling random walks on the $k$-NN graph, this method approximates a topological mask that allows information to diffuse beyond immediate neighbors (multi-hop) in $\mathcal{O}(N)$ time, injecting a structural inductive bias that favors physically connected paths.
+\end{itemize}
+
+Crucially, to prevent the model from learning a trivial identity function (where $P_{t+1} \approx P_t$), we employ an \textbf{autoregressive training strategy}. Instead of calculating the loss solely on the next step prediction (Teacher Forcing), we perform multi-step rollouts during training. The model predicts $\hat{P}_{t+1}$, which is then fed back as input to predict $\hat{P}_{t+2}$, and so on. The loss is computed as the average Mean Squared Error (MSE) across all rollout steps against the ground truth sequence, forcing the model to learn trajectory stability and error correction.
