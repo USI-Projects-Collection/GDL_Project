@@ -1,1 +1,43 @@
-\subsection{VITS: Vision--Image Tasks (Graph + Image Integration) \& Ablation Studies}
+\subsection{ViTs: Vision Transformer Tasks (Graph + Image Integration) \& Ablation Studies}
+
+To reproduce the comparative performance and ablation experiments, we developed a custom implementation of the Vision Transformer pipeline in PyTorch. The authors' original code was not available, thus we implemented the five attention variants (Softmax, Linear, Toeplitz, Exact $\mathbf{M}_{\alpha}$ and GRF) from scratch to verify the algorithmic description provided in the paper \cite{reid2025linear}. Hence to computational limitations our implementation is scaled down and the experiment is executed on less complex datasets. Therefor we did not calculate the mask matrix $\mathbf{M}_{\alpha}$ for GRF implicitly, but explicitly. \textbf{!!!!! TODO CHECK again!!!!}
+
+\subsubsection{\textbf{Datasets: }}Due to computational constraints, we adapted the experimental setup from large-scale benchmarks (ImageNet, iNaturalist) to smaller standard datasets. We evaluated the models on: \textbf{CIFAR-10}, \textbf{CIFAR-100} and \textbf{FashionMNIST}.
+
+\begin{itemize}
+    \item \textbf{Preprocessing:} All images were resized to $32\times 32$ pixels to ensure consistency with our patch embedding logic. We applied standard normalization  $(\mu=0.5, \sigma=0.5)$.
+    \item \textbf{Retrieval:} All the datasets are available via the torchvision.datasets module.
+    \item \textbf{Augmentation:} For the main comparative experiments reported in Table 1, we did not apply heavy data augmentation to isolate the contribution of the attention mechanism itself. However, the codebase supports the random crops and flips.
+\end{itemize}
+
+\subsubsection{\textbf{Hyperparameters: }
+
+\textbf{TODO}
+Due to computational restraints, we scaled down the architecture significantly compared to the ViT-B/16 \cite{dosovitskiy2020image} used in the original paper\cite{reid2025linear}. Our hyperparameters were chosen to allow for rapid iteration on consumer-grade hardware while maintaining enough capacity to distinguish between attention mechanisms. Table \ref{vit_hyperparameters} lists the hyperparameters we used for the different datasets.
+
+\begin{table}[h]
+    \centering
+    \caption{Architecture, hyperparameters and training details for ViT experiments.}
+    \label{tab:vit_hyperparameters}
+    \begin{tabular}{l|ccc}
+        \toprule
+        \textbf{CIFAR-10} & \textbf{CIFAR-100} & \textbf{FashionMNIST} \\
+        \midrule
+        Num. layers & 2 & 2 & 2 \\
+        Num. heads & 4 & 4 & 4 \\
+        Num. patches & $4 \times 4$ & $4 \times 4$ & $4 \times 4$ \\
+        Hidden size & 64 & 64 & 64 \\
+        MLP dim. & 128 & 128 & 128 \\
+        Optimiser & Adam & Adam & Adam \\
+        Epochs & 15 & 30 & 10 \\
+        Learning rate & $1 \times 10^{-3}$ & $1 \times 10^{-3}$ & $1 \times 10^{-3}$ \\
+        Batch size & 128 & 128 & 128 \\
+        $\phi(\cdot)$ & ReLU($\cdot)+ 10^{-6}$ & ReLU($\cdot)+ 10^{-6}$ & ReLU($\cdot)+ 10^{-6}$ \\
+        Num. walks & 50 & 50 & 50 \\
+        $p_{\text{halt}}$ & 0.1 & 0.1 & 0.1 \\
+        Max. walk length ($i_{\max}$) & 10 & 10 & 10 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textbf{...}
