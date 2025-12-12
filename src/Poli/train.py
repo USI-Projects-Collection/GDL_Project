@@ -6,25 +6,38 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import os
+import gc  # Add garbage collector
 
 # --- CONFIGURATION ---
 MODEL_MODE = 'grf'  # 'grf', 'baseline', 'mp'
 DATA_PATH = "./data/"
 BATCH_SIZE = 16
 LR = 1e-3 # Learning Rate
-EPOCHS = 500
+EPOCHS = 100
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {DEVICE}")
 K_NEIGHBORS = 6
 VAL_SPLIT = 0.2
+TRAIN_ROLLOUT_STEPS = 3  # Number of autoregressive steps during training
+
+# --- DYNAMIC KNN FUNCTION ---
+def compute_knn_torch(points, k):
+    """Compute KNN dynamically on GPU - works with batched tensors"""
+    B, N, D = points.shape
+    # Compute pairwise distances
+    dist_mat = torch.cdist(points, points, p=2)
+    # Get k+1 nearest neighbors (includes self), then exclude self
+    _, knn_indices = torch.topk(dist_mat, k=k+1, dim=-1, largest=False)
+    return knn_indices[:, :, 1:]  # Shape: (B, N, k)
 
 # --- DATASET ---
 class RobotArmDataset(Dataset):
-    def __init__(self, points_path, knn_path):
+    def __init__(self, points_path, knn_path, rollout_steps=1):
         if not os.path.exists(points_path):
             raise FileNotFoundError(f"File {points_path} not found.")
         self.points = np.load(points_path).astype(np.float32)
         self.knn = np.load(knn_path).astype(np.int64)
+        self.rollout_steps = rollout_steps
 
         # Normalization stats
         self.mean = np.mean(self.points, axis=(0, 1))
@@ -32,12 +45,19 @@ class RobotArmDataset(Dataset):
         self.points = (self.points - self.mean) / (self.std + 1e-6)
 
     def __len__(self):
-        return len(self.points) - 1
+        # Account for needing rollout_steps future frames
+        return len(self.points) - self.rollout_steps
 
     def __getitem__(self, idx):
-        return torch.from_numpy(self.points[idx]), \
-               torch.from_numpy(self.knn[idx]), \
-               torch.from_numpy(self.points[idx + 1])
+        # Return input, knn, and sequence of rollout_steps targets
+        input_frame = torch.from_numpy(self.points[idx])
+        input_knn = torch.from_numpy(self.knn[idx])
+        # Stack future targets: [t+1, t+2, ..., t+rollout_steps]
+        targets = torch.stack([
+            torch.from_numpy(self.points[idx + i + 1])
+            for i in range(self.rollout_steps)
+        ])  # Shape: (rollout_steps, N, 3)
+        return input_frame, input_knn, targets
 
 # --- MODELS ---
 class LinearAttention(nn.Module):
@@ -135,7 +155,7 @@ class UnifiedInterlacer(nn.Module):
 
 # --- MAIN ---
 def main():
-    dataset = RobotArmDataset("points.npy", "knn_indices.npy")
+    dataset = RobotArmDataset("points.npy", "knn_indices.npy", rollout_steps=TRAIN_ROLLOUT_STEPS)
     train_size = int(len(dataset) * (1 - VAL_SPLIT))
     val_size = len(dataset) - train_size
     train_ds, val_ds = random_split(dataset, [train_size, val_size])
@@ -150,29 +170,64 @@ def main():
     train_losses = []
     val_losses = []
 
-    print(f"Start Training: {MODEL_MODE.upper()}")
+    print(f"Start Training: {MODEL_MODE.upper()} with {TRAIN_ROLLOUT_STEPS}-step rollout")
     for ep in range(EPOCHS):
-        # Training
+        # Training with multi-step rollout
         model.train()
         epoch_train_losses = []
-        for x, knn, y in train_loader:
-            x, knn, y = x.to(DEVICE), knn.to(DEVICE), y.to(DEVICE)
+        for x, knn, targets in train_loader:
+            # x: (B, N, 3), knn: (B, N, K), targets: (B, ROLLOUT_STEPS, N, 3)
+            x, knn, targets = x.to(DEVICE), knn.to(DEVICE), targets.to(DEVICE)
             optimizer.zero_grad()
-            pred = model(x, knn)
-            loss = criterion(pred, y)
-            loss.backward()
+            
+            # Multi-step rollout (BPTT - no detach)
+            current_input = x
+            current_knn = knn
+            step_losses = []
+            
+            for step in range(TRAIN_ROLLOUT_STEPS):
+                # Predict next frame
+                pred = model(current_input, current_knn)
+                
+                # Loss against ground truth target at this step
+                gt_target = targets[:, step]  # (B, N, 3)
+                step_loss = criterion(pred, gt_target)
+                step_losses.append(step_loss)
+                
+                # CLOSED LOOP: prediction becomes next input (NO detach for BPTT)
+                current_input = pred
+                
+                # DYNAMIC KNN: recompute graph on predicted coordinates
+                current_knn = compute_knn_torch(current_input, K_NEIGHBORS)
+            
+            # Total loss = average across all steps
+            total_loss = torch.stack(step_losses).mean()
+            total_loss.backward()
             optimizer.step()
-            epoch_train_losses.append(loss.item())
+            epoch_train_losses.append(total_loss.item())
 
-        # Validation
+        # Validation with same rollout
         model.eval()
         epoch_val_losses = []
         with torch.no_grad():
-            for x, knn, y in val_loader:
-                x, knn, y = x.to(DEVICE), knn.to(DEVICE), y.to(DEVICE)
-                pred = model(x, knn)
-                loss = criterion(pred, y)
-                epoch_val_losses.append(loss.item())
+            for x, knn, targets in val_loader:
+                x, knn, targets = x.to(DEVICE), knn.to(DEVICE), targets.to(DEVICE)
+                
+                current_input = x
+                current_knn = knn
+                step_losses = []
+                
+                for step in range(TRAIN_ROLLOUT_STEPS):
+                    pred = model(current_input, current_knn)
+                    gt_target = targets[:, step]
+                    step_loss = criterion(pred, gt_target)
+                    step_losses.append(step_loss)
+                    
+                    current_input = pred
+                    current_knn = compute_knn_torch(current_input, K_NEIGHBORS)
+                
+                total_loss = torch.stack(step_losses).mean()
+                epoch_val_losses.append(total_loss.item())
 
         train_loss = np.mean(epoch_train_losses)
         val_loss = np.mean(epoch_val_losses)
@@ -183,9 +238,9 @@ def main():
 
     # Plot and save loss curves
     plt.figure(figsize=(10, 6))
-    plt.plot(range(1, EPOCHS + 1), train_losses, label='Training Loss', marker='o')
-    plt.plot(range(1, EPOCHS + 1), val_losses, label='Validation Loss', marker='s')
-    plt.title(f'Training and Validation Loss - {MODEL_MODE.upper()}')
+    plt.plot(range(1, EPOCHS + 1), train_losses, label='Training Loss')
+    plt.plot(range(1, EPOCHS + 1), val_losses, label='Validation Loss')
+    plt.title(f'Training and Validation Loss - {MODEL_MODE.upper()} ({TRAIN_ROLLOUT_STEPS}-step rollout)')
     plt.xlabel('Epoch')
     plt.ylabel('Loss (MSE)')
     plt.yscale('log')
@@ -202,23 +257,36 @@ def main():
     print(f"Losses saved to losses_{MODEL_MODE}.npz")
     print()
 
-    # SAVE MODEL WEIGHTS (include losses in checkpoint)
+    # SAVE MODEL WEIGHTS
     torch.save({
         'model_state_dict': model.state_dict(),
         'mean': dataset.mean,
         'std': dataset.std,
         'mode': MODEL_MODE,
         'train_losses': train_losses,
-        'val_losses': val_losses
+        'val_losses': val_losses,
+        'rollout_steps': TRAIN_ROLLOUT_STEPS
     }, f"model_{MODEL_MODE}.pth")
     print(f"Model saved to model_{MODEL_MODE}.pth")
 
 if __name__ == "__main__":
     os.chdir(DATA_PATH)
 
-    MODEL_MODE = 'baseline'
-    main()
-    MODEL_MODE = 'mp'
-    main()
-    MODEL_MODE = 'grf'
-    main()
+    for mode in ['baseline', 'mp', 'grf']:
+        MODEL_MODE = mode
+        print(f"\n{'='*50}")
+        print(f"Starting training for: {MODEL_MODE.upper()}")
+        print(f"{'='*50}\n")
+        
+        main()
+        
+        # --- AGGRESSIVE CLEANUP ---
+        # Clear all cached memory on GPU
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+        
+        # Force Python garbage collection
+        gc.collect()
+        
+        print(f"\n[Cleanup] GPU cache cleared after {MODEL_MODE.upper()} training.\n")
