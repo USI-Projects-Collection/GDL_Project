@@ -1,43 +1,55 @@
 \subsection{ViTs: Vision Transformer Tasks (Graph + Image Integration) \& Ablation Studies}
 
-To reproduce the comparative performance and ablation experiments, we developed a custom implementation of the Vision Transformer pipeline in PyTorch. The authors' original code was not available, thus we implemented the five attention variants (Softmax, Linear, Toeplitz, Exact $\mathbf{M}_{\alpha}$ and GRF) from scratch to verify the algorithmic description provided in the paper \cite{reid2025linear}. Hence to computational limitations our implementation is scaled down and the experiment is executed on less complex datasets. Therefor we did not calculate the mask matrix $\mathbf{M}_{\alpha}$ for GRF implicitly, but explicitly. \textbf{!!!!! TODO CHECK again!!!!}
+To reproduce the comparative performance and ablation experiments, we developed a custom implementation of the Vision Transformer pipeline in PyTorch. The authors' original code was not available, thus we implemented the five attention variants (Softmax, Linear, Toeplitz, Exact $\mathbf{M}_{\alpha}$ and GRF) from scratch to verify the algorithmic description provided in the paper \cite{reid2025linear}. While the original work utilized large-scale datasets like \textit{ImageNet}, \textit{iNaturalist}, \textit{Places365}, we adapted the experimental setup to accessible, lower-resolution benchmarks to verify the algorithmic properties within a constrained computational budget.
 
-\subsubsection{\textbf{Datasets: }}Due to computational constraints, we adapted the experimental setup from large-scale benchmarks (ImageNet, iNaturalist) to smaller standard datasets. We evaluated the models on: \textbf{CIFAR-10}, \textbf{CIFAR-100} and \textbf{FashionMNIST}.
-
+\subsubsection{\textbf{Datasets: }} We evaluated the method on three standard image classification datasets:
 \begin{itemize}
-    \item \textbf{Preprocessing:} All images were resized to $32\times 32$ pixels to ensure consistency with our patch embedding logic. We applied standard normalization  $(\mu=0.5, \sigma=0.5)$.
-    \item \textbf{Retrieval:} All the datasets are available via the torchvision.datasets module.
-    \item \textbf{Augmentation:} For the main comparative experiments reported in Table 1, we did not apply heavy data augmentation to isolate the contribution of the attention mechanism itself. However, the codebase supports the random crops and flips.
+    \item \textbf{CIFAR-10:} Consisting of 60,000, $32 \times 32$ color images in 10 classes.
+    \item \textbf{CIFAR-100:} Similar to CIFAR-10 but with 100 classes.
+    \item \textbf{FashionMNIST:} Consisting of 60,000 $28 \times 28$ grayscale images in 10 classes.
 \end{itemize}
+All the datasets are available via the \texttt{torchvision.datasets} module.
 
-\subsubsection{\textbf{Hyperparameters: }
+\subsubsection{\textbf{Hyperparameters: }}
 
 \textbf{TODO}
-Due to computational restraints, we scaled down the architecture significantly compared to the ViT-B/16 \cite{dosovitskiy2020image} used in the original paper\cite{reid2025linear}. Our hyperparameters were chosen to allow for rapid iteration on consumer-grade hardware while maintaining enough capacity to distinguish between attention mechanisms. Table \ref{vit_hyperparameters} lists the hyperparameters we used for the different datasets.
+Due to computational restraints, we scaled down the architecture significantly compared to the ViT-B/16 \cite{dosovitskiy2020image} used in the original paper\cite{reid2025linear}. Hyperparameters (Table~\ref{tab:hyperparameters}) were chosen to accommodate the smaller model capacity required for these datasets while maintaining the relative structure of the original experiments.
 
-\begin{table}[h]
-    \centering
-    \caption{Architecture, hyperparameters and training details for ViT experiments.}
-    \label{tab:vit_hyperparameters}
-    \begin{tabular}{l|ccc}
-        \toprule
-        \textbf{CIFAR-10} & \textbf{CIFAR-100} & \textbf{FashionMNIST} \\
-        \midrule
-        Num. layers & 2 & 2 & 2 \\
-        Num. heads & 4 & 4 & 4 \\
-        Num. patches & $4 \times 4$ & $4 \times 4$ & $4 \times 4$ \\
-        Hidden size & 64 & 64 & 64 \\
-        MLP dim. & 128 & 128 & 128 \\
-        Optimiser & Adam & Adam & Adam \\
-        Epochs & 15 & 30 & 10 \\
-        Learning rate & $1 \times 10^{-3}$ & $1 \times 10^{-3}$ & $1 \times 10^{-3}$ \\
-        Batch size & 128 & 128 & 128 \\
-        $\phi(\cdot)$ & ReLU($\cdot)+ 10^{-6}$ & ReLU($\cdot)+ 10^{-6}$ & ReLU($\cdot)+ 10^{-6}$ \\
-        Num. walks & 50 & 50 & 50 \\
-        $p_{\text{halt}}$ & 0.1 & 0.1 & 0.1 \\
-        Max. walk length ($i_{\max}$) & 10 & 10 & 10 \\
-        \bottomrule
-    \end{tabular}
+\begin{table}[H]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|c|c|c|c|c|c|}
+    \toprule
+    \textbf{Hyperparameter} & \textbf{\shortstack{CIFAR-10\\(15 ep)}} & \textbf{\shortstack{CIFAR-100\\(30 ep)}} & \textbf{\shortstack{CIFAR-10\\(30 ep)}} & \textbf{\shortstack{FashionMNIST\\(10 ep)}} & \textbf{\shortstack{CIFAR-10\\(Scaled)}} \\
+    \midrule
+    Num. layers & 2 & 2 & 2 & 2 & 4 \\
+    Num. heads & 4 & 4 & 4 & 4 & 4 \\
+    Num. patches & $8 \times 8$ & $8 \times 8$ & $8 \times 8$ & $8 \times 8$ & $10 \times 10$ \\
+    Image Size & $32 \times 32$ & $32 \times 32$ & $32 \times 32$ & $32 \times 32$ & $42 \times 42$ \\
+    Hidden size & 64 & 64 & 64 & 64 & 64 \\
+    MLP dim. & 128 & 128 & 128 & 128 & 128 \\
+    Optimiser & Adam & Adam & Adam & Adam & Adam \\
+    Epochs & 15 & 30 & 30 & 10 & 15 \\
+    Learning rate & $1 \times 10^{-3}$ & $1 \times 10^{-3}$ & $1 \times 10^{-3}$ & $1 \times 10^{-3}$ & $1 \times 10^{-3}$ \\
+    Batch size & 128 & 128 & 128 & 128 & 64 \\
+    $\phi(\cdot)$ & ReLU & ReLU & ReLU & ReLU & ReLU \\
+    Num. walks ($n$) & 50 & 50 & 50 & 50 & 100 \\
+    $p_{halt}$ & 0.1 & 0.1 & 0.1 & 0.1 & 0.1 \\
+    \bottomrule
+\end{tabular}%
+}
+\caption{Architecture and training hyperparameters for all experimental runs.}
+\label{tab:hyperparameters}
 \end{table}
+\paragraph{Ablation Studies:} For the ablation study, we varied $n \in \{1, 10, 100, 1000\}$ and set $p_{halt}=0.5$ to strictly replicate the convergence setup described in the original appendix\cite{reid2025linear}.
 
-\textbf{...}
+\subsubsection{\textbf{Experimental Setup:}}
+The experiments were conducted on single GPUs (\textit{Nvidia T4, P100}) environments (\textit{CUDA-enabled}). The pipeline involved training five distinct model variants (Softmax, Toeplitz, $\mathbf{M}_{\alpha}$, GRF, Unmasked Linear) from scratch for each dataset. We utilized a custom \texttt{GRFExactAttention} module that pre-computes random walks on a \texttt{NetworkX} grid graph and registers them as buffers in the \texttt{PyTorch} model.
+
+\subsubsection{\textbf{Computational Requirements:}}
+Due to the downscaled input resolution ($32 \times 32$) and shallow architecture (2-4 layers), the computational load was lightweight respect to the original ViT experiments.
+\begin{itemize}
+    \item \textbf{Training Time:} approximately 17 seconds per epoch on the GPU used.
+    \item \textbf{Memory Usage:} The models fit comfortably within standard GPU memory constraints (< 4GB).
+    \item \textbf{Pre-computation:} The generation of random walks for the $8 \times 8$ patch grid was instantaneous and performed once at initialization.
+\end{itemize}
