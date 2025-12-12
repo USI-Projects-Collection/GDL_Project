@@ -27,12 +27,11 @@ def compute_knn_torch(points, k):
     
     dist_mat = x_sq + y_sq - 2 * xy
     
-    # topk returns values and indices. We want indices of smallest distances.
     # largest=False prende i più piccoli.
     # k+1 perché il più vicino è se stesso (distanza 0)
     _, knn_indices = torch.topk(dist_mat, k=k+1, dim=-1, largest=False)
     
-    # Rimuoviamo il primo (se stesso)
+    # Rimuovo se stesso
     return knn_indices[:, :, 1:]
 
 def main():
@@ -70,8 +69,7 @@ def main():
     
     with torch.no_grad():
         for t in range(num_frames - 1):
-            # A. Calcoliamo il KNN sui punti ATTUALI (che potrebbero essere predetti)
-            # Questo è cruciale: il grafo evolve con la predizione fisica
+            # A. Calcola il KNN sui punti ATTUALI (che potrebbero essere predetti)
             knn_indices = compute_knn_torch(current_frame, K_NEIGHBORS)
             
             # B. Predizione
@@ -87,7 +85,6 @@ def main():
             if t % 50 == 0:
                 print(f"Generated frame {t}/{num_frames}")
 
-    # 4. Salvataggio finale
     pred_array = np.array(predictions) # (F, N, 3)
     save_name = f"rollout_{MODEL_MODE}.npy"
     np.save(save_name, pred_array)

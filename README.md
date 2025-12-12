@@ -32,19 +32,9 @@ If the environment file changes (e.g., someone added new dependencies) [see Sect
 conda env update -f env/environment.yaml --prune
 ```
 
-## 🚀 3. Running the Code
-
-After activating the environment:
-
-```bash
-# TODO
-```
-
-All results and model checkpoints will be saved under ...
-
 ---
 
-## 📄 4. LaTeX Report Compilation
+## 📄 3. LaTeX Report Compilation
 
 Use a Makefile to build the final PDF.
 
@@ -71,7 +61,7 @@ make clean    # Removes temporary LaTeX files
 
 ---
 
-## 👥 5. Collaboration Workflow
+## 👥 4. Collaboration Workflow
 
 When adding new dependencies:
 1. Install the package in your Conda environment:
@@ -94,7 +84,7 @@ When adding new dependencies:
 
 ---
 
-## 🧾 6. License & Credits
+## 🧾 5. License & Credits
 
 © 2025 — Università della Svizzera italiana (USI), Master in Artificial Intelligence.  
 Developed by the Graph Deep Learning project group.
