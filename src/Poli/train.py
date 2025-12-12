@@ -14,7 +14,7 @@ DATA_PATH = "/kaggle/input/4096-5/data/"
 OUTPUT_PATH = '/kaggle/working/'
 BATCH_SIZE = 16
 LR = 1e-3 # Learning Rate
-EPOCHS = 1
+EPOCHS = 100
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {DEVICE}")
 
@@ -22,7 +22,7 @@ points_path = os.path.join(DATA_PATH, "points.npy")
 knn_path = os.path.join(DATA_PATH, "knn_indices.npy")
 
 
-K_NEIGHBORS = 4
+K_NEIGHBORS = 6
 VAL_SPLIT = 0.1
 TRAIN_ROLLOUT_STEPS = 3  # Number of autoregressive steps during training
 
