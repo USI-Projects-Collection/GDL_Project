@@ -5,8 +5,8 @@ import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 
 // --- CONFIGURAZIONE ---
-const NUM_POINTS = 1024;         
-const RECORD_INTERVAL = 0.1; // frequenza in secondi => 0.1 => 1 ogni 0.1 secondi = 10 frame al secondo
+const NUM_POINTS = 4096;         
+const RECORD_INTERVAL = 0.5; // frequenza in secondi => 0.1 => 1 ogni 0.1 secondi = 10 frame al secondo
 const K_NEIGHBORS = 6;
 
 // Parametri del braccio

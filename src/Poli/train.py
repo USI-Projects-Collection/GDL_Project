@@ -10,14 +10,20 @@ import gc  # Add garbage collector
 
 # --- CONFIGURATION ---
 MODEL_MODE = 'grf'  # 'grf', 'baseline', 'mp'
-DATA_PATH = "./data/"
+DATA_PATH = "/kaggle/input/4096-5/data/"
+OUTPUT_PATH = '/kaggle/working/'
 BATCH_SIZE = 16
 LR = 1e-3 # Learning Rate
-EPOCHS = 100
+EPOCHS = 1
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {DEVICE}")
-K_NEIGHBORS = 6
-VAL_SPLIT = 0.2
+
+points_path = os.path.join(DATA_PATH, "points.npy")
+knn_path = os.path.join(DATA_PATH, "knn_indices.npy")
+
+
+K_NEIGHBORS = 4
+VAL_SPLIT = 0.1
 TRAIN_ROLLOUT_STEPS = 3  # Number of autoregressive steps during training
 
 # --- DYNAMIC KNN FUNCTION ---
@@ -76,7 +82,7 @@ class LinearAttention(nn.Module):
         return self.to_out(attn)
 
 class TopologicalGRFLayer(nn.Module):
-    def __init__(self, dim, k_neighbors, hops=3):
+    def __init__(self, dim, k_neighbors, hops=5):
         super().__init__()
         self.k = k_neighbors
         self.hops = hops
@@ -116,15 +122,15 @@ class SimpleMessagePassing(nn.Module):
         return self.proj(neighbors.mean(dim=2))
 
 class UnifiedInterlacer(nn.Module):
-    def __init__(self, mode='grf', input_dim=3, embed_dim=128, num_layers=5):
+    def __init__(self, mode='grf', input_dim=3, embed_dim=64, num_layers=4):
         super().__init__()
         self.mode = mode
         self.num_layers = num_layers
         self.embedding = nn.Linear(input_dim, embed_dim)
-        
+
         # Create layer norms for each layer (2 per block: graph + attention)
         self.norms = nn.ModuleList([nn.LayerNorm(embed_dim) for _ in range(num_layers * 2)])
-        
+
         # Create graph layers (GRF, MP, or Identity based on mode)
         if mode == 'grf':
             self.graph_layers = nn.ModuleList([TopologicalGRFLayer(embed_dim, K_NEIGHBORS) for _ in range(num_layers)])
@@ -132,30 +138,30 @@ class UnifiedInterlacer(nn.Module):
             self.graph_layers = nn.ModuleList([SimpleMessagePassing(embed_dim, K_NEIGHBORS) for _ in range(num_layers)])
         else:
             self.graph_layers = nn.ModuleList([nn.Identity() for _ in range(num_layers)])
-        
+
         # Create attention layers
         self.attn_layers = nn.ModuleList([LinearAttention(embed_dim) for _ in range(num_layers)])
-        
+
         self.head = nn.Linear(embed_dim, 3)
 
     def forward(self, x, knn):
         h = self.embedding(x)
-        
+
         for i in range(self.num_layers):
             # Graph layer
             if self.mode != 'baseline':
                 h = h + self.graph_layers[i](self.norms[i * 2](h), knn)
             else:
                 h = h + self.norms[i * 2](h)
-            
+
             # Attention layer
             h = h + self.attn_layers[i](self.norms[i * 2 + 1](h))
-        
+
         return self.head(h)
 
 # --- MAIN ---
 def main():
-    dataset = RobotArmDataset("points.npy", "knn_indices.npy", rollout_steps=TRAIN_ROLLOUT_STEPS)
+    dataset = RobotArmDataset(points_path, knn_path, rollout_steps=TRAIN_ROLLOUT_STEPS)
     train_size = int(len(dataset) * (1 - VAL_SPLIT))
     val_size = len(dataset) - train_size
     train_ds, val_ds = random_split(dataset, [train_size, val_size])
@@ -179,27 +185,27 @@ def main():
             # x: (B, N, 3), knn: (B, N, K), targets: (B, ROLLOUT_STEPS, N, 3)
             x, knn, targets = x.to(DEVICE), knn.to(DEVICE), targets.to(DEVICE)
             optimizer.zero_grad()
-            
+
             # Multi-step rollout (BPTT - no detach)
             current_input = x
             current_knn = knn
             step_losses = []
-            
+
             for step in range(TRAIN_ROLLOUT_STEPS):
                 # Predict next frame
                 pred = model(current_input, current_knn)
-                
+
                 # Loss against ground truth target at this step
                 gt_target = targets[:, step]  # (B, N, 3)
                 step_loss = criterion(pred, gt_target)
                 step_losses.append(step_loss)
-                
+
                 # CLOSED LOOP: prediction becomes next input (NO detach for BPTT)
                 current_input = pred
-                
+
                 # DYNAMIC KNN: recompute graph on predicted coordinates
                 current_knn = compute_knn_torch(current_input, K_NEIGHBORS)
-            
+
             # Total loss = average across all steps
             total_loss = torch.stack(step_losses).mean()
             total_loss.backward()
@@ -212,20 +218,20 @@ def main():
         with torch.no_grad():
             for x, knn, targets in val_loader:
                 x, knn, targets = x.to(DEVICE), knn.to(DEVICE), targets.to(DEVICE)
-                
+
                 current_input = x
                 current_knn = knn
                 step_losses = []
-                
+
                 for step in range(TRAIN_ROLLOUT_STEPS):
                     pred = model(current_input, current_knn)
                     gt_target = targets[:, step]
                     step_loss = criterion(pred, gt_target)
                     step_losses.append(step_loss)
-                    
+
                     current_input = pred
                     current_knn = compute_knn_torch(current_input, K_NEIGHBORS)
-                
+
                 total_loss = torch.stack(step_losses).mean()
                 epoch_val_losses.append(total_loss.item())
 
@@ -246,13 +252,13 @@ def main():
     plt.yscale('log')
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.6)
-    plt.savefig(f'loss_plot_{MODEL_MODE}.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'/kaggle/working/loss_plot_{MODEL_MODE}.png', dpi=150, bbox_inches='tight')
     plt.close()
     print(f"Loss plot saved to loss_plot_{MODEL_MODE}.png")
 
     # Save losses to numpy file
-    np.savez(f'losses_{MODEL_MODE}.npz', 
-             train_losses=np.array(train_losses), 
+    np.savez(f'losses_{MODEL_MODE}.npz',
+             train_losses=np.array(train_losses),
              val_losses=np.array(val_losses))
     print(f"Losses saved to losses_{MODEL_MODE}.npz")
     print()
@@ -266,27 +272,27 @@ def main():
         'train_losses': train_losses,
         'val_losses': val_losses,
         'rollout_steps': TRAIN_ROLLOUT_STEPS
-    }, f"model_{MODEL_MODE}.pth")
+    }, f"{OUTPUT_PATH}model_{MODEL_MODE}.pth")
     print(f"Model saved to model_{MODEL_MODE}.pth")
 
 if __name__ == "__main__":
-    os.chdir(DATA_PATH)
+    # os.chdir(DATA_PATH)
 
-    for mode in ['baseline', 'mp', 'grf']:
+    for mode in ['grf', 'mp', 'baseline']:
         MODEL_MODE = mode
         print(f"\n{'='*50}")
         print(f"Starting training for: {MODEL_MODE.upper()}")
         print(f"{'='*50}\n")
-        
+
         main()
-        
+
         # --- AGGRESSIVE CLEANUP ---
         # Clear all cached memory on GPU
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
             torch.cuda.synchronize()
-        
+
         # Force Python garbage collection
         gc.collect()
-        
+
         print(f"\n[Cleanup] GPU cache cleared after {MODEL_MODE.upper()} training.\n")
