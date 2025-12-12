@@ -1,5 +1,5 @@
 \subsection{Vision Transformers (ViTs)}
-We present the results of our reproduction experiments, comparing the proposed GRF-masked linear attention against all the other variants.
+We present the results of our reproduction experiments (Table~\ref{tab:accuracies}), comparing the proposed GRF-masked linear attention against all the other variants.
 
 \begin{table}[H]
 \centering
@@ -20,3 +20,15 @@ We present the results of our reproduction experiments, comparing the proposed G
 \caption{Accuracies results for all ViT attention variants across different datasets and training epochs.}
 \label{tab:accuracies}
 \end{table}
+In the most challenging configurations, the proposed GRF masking demonstrates a clear advantage over standard unmasked linear attention. For instance, on CIFAR-10 (30 epochs) and CIFAR-100 dataset, GRF outperforms the unmasked variant.\\
+The Toeplitz-masked baseline, which is specifically engineered for grid-structured data like images, generally performs the best (e.g., 60.59\% on CIFAR-10 30ep). However, the GRF-masked method remains highly competitive (within $\approx 0.2-0.8\%$ in most cases).\\
+In this scaled-down regime, the linear attention variants often outperform the quadratic Unmasked Softmax baseline (e.g., 57.31\% on CIFAR-10 30ep vs. 60.37\% for GRF).\\
+The benefits of topological masking become more pronounced with longer training. On CIFAR-10, extending training from 15 to 30 epochs widens the performance gap between GRF-masked attention and the unmasked baseline.
+\paragraph{Ablation Studies:} 
+Figure~\ref{fig:ablation_study} shows a clear trend: adding more walkers consistently improves accuracy. Performance rises from 51.4\% with a single walker to 55.0\% with 1000 walkers. This confirms that using more walkers creates a more precise and stable approximation of the graph mask, reducing noise and helping the model learn better spatial relationships.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{assets/ablation_plot.png}
+    \caption{Ablation study effects.}
+    \label{fig:ablation_study}
+\end{figure}

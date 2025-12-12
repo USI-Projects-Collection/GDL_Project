@@ -3,12 +3,12 @@
 \textbf{Simulation and Data Generation.} \\
 While the original paper utilizes a real-world setup with RGB-D cameras and depth sensors to capture 32k particles, such hardware was unavailable for this reproduction. Consequently, we developed a lightweight, physics-based 3D simulation using React and Three.js.The simulation models a robotic arm with a kinematic chain consisting of a base, two rigid links, and a gripper. We sample $N$ points uniformly from the surface of the arm meshes at each frame.To generate the dataset, we recorded the arm performing sinusoidal movements of varying frequencies on its joints.A critical implementation detail was the \textbf{sampling rate}. Initial experiments with high frame rates (e.g., 60 FPS) resulted in negligible displacement between frames ($P_{t+1} \approx P_t$), allowing the Baseline model to achieve near-zero loss by simply copying the input. We adjusted the recording interval to 0.1s - 0.5s, creating significant displacements that necessitate learning the underlying physics.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.4\textwidth]{../src/Poli/data/supplementary/simulation.png}
-    \caption{Robotic arm simulation with point and edge cloud visualization}
-    \label{fig:simulation}
-\end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.4\textwidth]{../src/Poli/data/supplementary/simulation.png}
+%     \caption{Robotic arm simulation with point and edge cloud visualization}
+%     \label{fig:simulation}
+% \end{figure}
 
 \textbf{Modular Architecture.} \\
 We implemented a modular PyTorch architecture for the Interlacer. The model accepts a configuration flag to switch between Baseline (Linear Attention), MP (Simple Message Passing on K-NN), and GRF (Topological Masking with Random Walks).For the GRF implementation, we compute the sparse mask approximation dynamically. Since the robot moves, the graph topology changes at every frame; therefore, we recompute the $k$-NN graph ($k=4$ to $6$) and sample random walks (hops=$3$ to $5$) on the fly during both training and inference. \\
@@ -16,9 +16,9 @@ We implemented a modular PyTorch architecture for the Interlacer. The model acce
 \textbf{Evaluation Metric.} \\
 The original paper evaluates performance using SSIM (Structural Similarity Index Measure) on rendered images. Implementing a differentiable neural renderer was beyond the scope of this project. Therefore, we introduced a geometric proxy metric: \texttt{ACCURACY\_THRESHOLD}. We define a prediction as "accurate" if the Euclidean distance between a predicted point and its ground truth counterpart is below a strict threshold (e.g., $0.1$ units). This allows us to quantify how long the model can maintain the structural integrity of the robot before the simulation diverges ("explodes").\textbf{Computational Setup.} We trained the models on sequences of around 500 frames, testing point counts $N \in \{512, 1024, 2048, 4096\}$. We utilized a standard GPU environment (Colab T4). It is important to note that the theoretical $\mathcal{O}(N)$ advantage of GRF over the Baseline becomes strictly necessary at the scale of the original paper ($N \approx 30,000$), whereas for our scale ($N \le 4096$), the quadratic Baseline remains computationally tractable.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.4\textwidth]{../src/Poli/data/supplementary/architecture.png}
-    \caption{Interlacer Architecture with interchangeable Local Layers}
-    \label{fig:architecture}
-\end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.4\textwidth]{../src/Poli/data/supplementary/architecture.png}
+%     \caption{Interlacer Architecture with interchangeable Local Layers}
+%     \label{fig:architecture}
+% \end{figure}
