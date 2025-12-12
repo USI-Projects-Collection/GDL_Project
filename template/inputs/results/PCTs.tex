@@ -1,4 +1,4 @@
-\subsection{PCTS: Point Cloud Temporal State prediction}
+\subsection{PCTs: Point Cloud Temporal State prediction}
 
 We evaluated the three models by performing "closed-loop" rollouts: feeding the model's own predictions back as input for 10 consecutive timesteps and measuring the degradation of the robotic arm's structure. Figure \ref{fig:rollout_accuracy} illustrates the Accuracy retention over time. 
 
@@ -12,11 +12,10 @@ The results align with the topological hierarchy proposed:
     \item \textbf{GRF Interlacer (Red):} Demonstrates the highest stability. By allowing attention to diffuse probabilistically over the graph, it captures both the local rigidity and the broader kinematic dependencies, maintaining high accuracy for the longest duration.
 \end{enumerate}
 
-
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.4\textwidth]{../src/PCTs/supplementary/output.png}
-    \caption{Accuracy plot comparing Baseline, MP, and GRF over rollout steps}
+    \caption{Accuracy retention plot over rollout steps, comparing Baseline, MP, and GRF models. This plot successfully reproduces the relative model ranking (GRF $>$ MP $>$ Baseline) observed in Figure 4 (\textit{"Accuracy vs. rollout timestep"}) of the original paper \cite{reid2025linear}, while utilizing our geometric \texttt{ACCURACY\_THRESHOLD} metric.}
     \label{fig:rollout_accuracy}
 \end{figure}
 

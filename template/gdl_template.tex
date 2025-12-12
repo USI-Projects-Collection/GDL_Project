@@ -65,8 +65,9 @@ Our primary contribution is a validation of the theoretical and empirical claims
 \begin{itemize}
     \item \textbf{Time Complexity Verification:} We replicated the scaling experiment comparing Softmax, Linear, and GRF-Masked attention. Our results confirm the theoretical claims: while Softmax attention scales quadratically, exhibiting a ``computational explosion'' for $N > 8$, the GRF-Masked method maintains strict linear scaling $\mathcal{O}(N)$.
     \item \textbf{Vision Transformers (ViT):} We extended the evaluation to image classification tasks (\textit{CIFAR-10, CIFAR-100, FashionMNIST}) by treating images as 2D grid graphs. Our results demonstrate that GRF-masked linear attention effectively captures spatial dependencies, achieving performance competitive with grid-specific baselines (Toeplitz masking) and consistently outperforming unmasked linear attention. Additionally, our ablation study confirms that increasing the number of random walkers (n) monotonically improves classification accuracy, validating the theoretical link between estimator variance and downstream performance.
-    \item \textbf{Point Cloud Temporal State Prediction (PCTS):} To test the method's efficacy on dynamic, irregular topologies, we replicated the High-Density Visual Particle Dynamics (HD-VPD) experiment using a physics-based simulation of a robotic arm. Our "closed-loop" rollout evaluation reveals that the GRF-based model maintains structural integrity significantly longer than unmasked baselines. While standard message-passing approaches degrade slowly due to rigid local constraints, the GRF mechanism successfully captures broader kinematic dependencies via random walks, demonstrating superior stability in predicting future states.
+    \item \textbf{Point Cloud Temporal State Prediction (PCTs):} To test the method's efficacy on dynamic, irregular topologies, we replicated the High-Density Visual Particle Dynamics (HD-VPD) experiment using a physics-based simulation of a robotic arm. Our "closed-loop" rollout evaluation reveals that the GRF-based model maintains structural integrity significantly longer than unmasked baselines. While standard message-passing approaches degrade slowly due to rigid local constraints, the GRF mechanism successfully captures broader kinematic dependencies via random walks, demonstrating superior stability in predicting future states.
 \end{itemize}
+
 % ==========================================================================
 % ==========================================================================
 \section{Related works}
@@ -93,17 +94,26 @@ The method reproduced in this work \cite{reid2025linear} distinguishes itself by
 \input{inputs/results/results.tex}
 % ==========================================================================
 % ==========================================================================
-\section{Discussion and conclusion}
+\section{Discussion}
+
 \subsection{Time Complexity}
 Our reproduction successfully confirms that the GRF-based masking mechanism preserves the $\mathcal{O}(N)$ complexity of linear attention. We observed an empirical crossover point at $N=8$; beyond this threshold, the cost of standard Softmax attention explodes quadratically, becoming approximately $511 \times$ more expensive than linear variants at N=4096. This divergence verifies that for large-scale applications ($N \geq 30,000$), quadratic attention is computationally intractable.\\
 While maintaining linear scaling, the GRF method incurs a constant overhead of $\approx 3.14 \times$ compared to unmasked linear attention. This factor corresponds directly to the sparsity of the graph features (average unique nodes visited per walk) and represents the necessary computational price for injecting structural bias. While our theoretical FLOP analysis places the crossover at $N=8$, practical speedups may require slightly larger N due to the relative hardware inefficiency of sparse matrix operations compared to optimized dense multiplication. Nevertheless, the asymptotic advantage guarantees GRF superiority for large graphs.
+
 \subsection{Vision Transformers (ViTs)}
 Our adjusted experiments only partially confirms the original paper's\cite{reid2025linear} hypothesis. While the original work reported consistent, significant gains (e.g., 3,7\% on ImageNet), our results in Table~\ref{tab:accuracies} show that GRF-masked attention provides inconsistent benefits at this smaller scale. \\
 On one hand GRF significantly outperformed the unmasked linear baseline on \textbf{CIFAR-10}(+1,85\%) and marginally on \textbf{CIFAR-100}(+0,4\%). On the other hand, GRF performed as well as or worse than the unmasked baseline on \textbf{FashionMNIST} and \textbf{CIFAR-10} (15 ep). This suggests that inductive bias is less effective than claimed on simpler tasks or shorter training schedules. \\
 The outstanding performance of the Toeplitz-masked baseline indicates that for fixed grid topologies such as images, the stochastic noise caused by GRF outweighs its flexibility, making deterministic relative positional encodings superior. \\
 The deviation from the original paper's \cite{reid2025linear} strong results is likely due to scale. The original experiments used $16 \times 16$ patches ($N = 256$), whereas our constrained setup used $8 \times 8$ patches ($N=64$). At $N=64$, global attention is computationally cheap and easy to learn; the "long-range dependency" problem that topological masking aims to solve is virtually non-existent. Consequently, the GRF mechanism added variance without providing the necessary structural regularization required at larger sequence lengths.
-\subsection{PCTS: Point Cloud Temporal State prediction}
-\subsection{Conclusion}
+
+\subsection{PCTs: Point Cloud Temporal State prediction}
+Our replication of the experiment yielded evidence for the efficacy of topological masking. The stark contrast between the Baseline and the topological models (MP and GRF) in the autoregressive setting confirms that \textbf{structural inductive bias is not optional but necessary} for physical dynamics prediction.
+
+\textbf{Failure of the Baseline.} The Unmasked Linear Transformer failed to maintain structural coherence over time (Figure \ref{fig:rollout_accuracy}). By forcing the model to predict 3 steps into the future during training, we exposed the limitation of the "Teacher Forcing" approach on unstructured models. Without a graph topology to constrain the particles, the Baseline treats the point cloud as a nebulous set, leading to rapid drift and "explosion" of the robotic arm structure during inference.
+
+\textbf{GRF vs. Message Passing.} The results show that GRF is highly competitive to the standard Message Passing (MP) approach. It is worth noting that our simulation involves a \textit{rigid} robotic arm. Rigid body dynamics favor MP because constraints are strictly local (a point's position is deterministic given its neighbors). Despite this "home field advantage" for MP, the GRF model (configured with $k=4$ neighbors but 5 random walk hops) successfully matched and eventually surpassed MP stability. This suggests that the \textit{diffusion} mechanism of GRF allows it to capture kinematic chain dependencies (e.g., how the base rotation affects the finger tip) that a strictly local MP layer might miss, validating the method's robustness even outside the fluid-dynamics domain of the original paper.
+
+\section{Conclusion}
 % ==========================================================================
 % ==========================================================================
 % Bibliography
