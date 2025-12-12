@@ -13,10 +13,10 @@ We evaluated the method on three standard image classification datasets:
 \subsubsection{\textbf{Hyperparameters:}}
 Hyperparameters were chosen to accommodate the smaller model capacity required for these datasets while maintaining the relative structure of the original experiments.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \resizebox{\columnwidth}{!}{%
-\begin{tabular}{lccccc}
+\begin{tabular}{|c|c|c|c|c|c|}
     \toprule
     \textbf{Hyperparameter} & \textbf{\shortstack{CIFAR-10\\(15 ep)}} & \textbf{\shortstack{CIFAR-100\\(30 ep)}} & \textbf{\shortstack{CIFAR-10\\(30 ep)}} & \textbf{\shortstack{FashionMNIST\\(10 ep)}} & \textbf{\shortstack{CIFAR-10\\(Scaled)}} \\
     \midrule
@@ -46,5 +46,7 @@ The experiments were conducted on a single GPU environment (CUDA-enabled). The p
 \subsubsection{\textbf{Computational Requirements:}}
 Due to the downscaled input resolution ($32 \times 32$) and shallow architecture (2-4 layers), the computational load was lightweight respect to the original ViT experiments.
 \begin{itemize}
-    \item \textbf{Training Time:} ...To write
+    \item \textbf{Training Time:} approximately 16.8 seconds per epoch on the GPU used.
+    \item \textbf{Memory Usage:} The models fit comfortably within standard GPU memory constraints (< 4GB).
+    \item \textbf{Pre-computation:} The generation of random walks for the $8 \times 8$ patch grid was instantaneous and performed once at initialization.
 \end{itemize}

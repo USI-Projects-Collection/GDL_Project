@@ -1,1 +1,22 @@
 \subsection{Vision Transformers (ViTs)}
+We present the results of our reproduction experiments, comparing the proposed GRF-masked linear attention against all the other variants.
+
+\begin{table}[H]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|c|c|c|c|c|c|}
+    \toprule
+    \textbf{Variant} & \textbf{\shortstack{CIFAR-10\\(15 ep)}} & \textbf{\shortstack{CIFAR-100\\(30 ep)}} & \textbf{\shortstack{CIFAR-10\\(30 ep)}} & \textbf{\shortstack{FashionMNIST\\(10 ep)}} & \textbf{\shortstack{CIFAR-10\\(Scaled)}} \\
+    \midrule
+    Unmasked softmax & 56.11 & 28.67 & 57.31 & 87.49 & 56.42 \\
+    Toeplitz-masked linear & 57.25 & 31.80 & 60.59 & 87.92 & 57.90 \\
+    $\mathbf{M_{\alpha}(\mathcal{G})}$\textbf{-masked linear} & \textbf{56.83} & \textbf{30.11} & \textbf{58.02} & \textbf{86.77} & \textbf{58.95} \\
+    \hline
+    Unmasked linear & 56.69 & 31.59 & 58.52 & 87.41 & 59.58 \\
+    \textbf{GRF-masked linear} & \textbf{56.69} & \textbf{31.99} & \textbf{60.37} & \textbf{87.11} & \textbf{58.93} \\
+    \bottomrule
+\end{tabular}%
+}
+\caption{Accuracies results for all ViT attention variants across different datasets and training epochs.}
+\label{tab:accuracies}
+\end{table}
