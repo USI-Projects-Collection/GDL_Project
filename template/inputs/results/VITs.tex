@@ -10,7 +10,7 @@ We present the results of our reproduction experiments (Table~\ref{tab:accuracie
     \midrule
     Unmasked softmax & 56.11 & 28.67 & 57.31 & 87.49 & 56.42 \\
     Toeplitz-masked linear & 57.25 & 31.80 & 60.59 & 87.92 & 57.90 \\
-    $\mathbf{M_{\alpha}(\mathcal{G})}$\textbf{-masked linear} & \textbf{56.83} & \textbf{30.11} & \textbf{58.02} & \textbf{86.77} & \textbf{58.95} \\
+    $\mathbf{M_{\alpha}(\mathcal{G})}$\textbf{-masked linear} & 56.83 & 30.11 & 58.02 & 86.77 & 58.95 \\
     \hline
     Unmasked linear & 56.69 & 31.59 & 58.52 & 87.41 & 59.58 \\
     \textbf{GRF-masked linear} & \textbf{56.69} & \textbf{31.99} & \textbf{60.37} & \textbf{87.11} & \textbf{58.93} \\
@@ -26,7 +26,7 @@ In this scaled-down regime, the linear attention variants often outperform the q
 The benefits of topological masking become more pronounced with longer training. On CIFAR-10, extending training from 15 to 30 epochs widens the performance gap between GRF-masked attention and the unmasked baseline.
 \paragraph{Ablation Studies:} 
 Figure~\ref{fig:ablation_study} shows a clear trend: adding more walkers consistently improves accuracy. Performance rises from 51.4\% with a single walker to 55.0\% with 1000 walkers. This confirms that using more walkers creates a more precise and stable approximation of the graph mask, reducing noise and helping the model learn better spatial relationships.
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{assets/ablation_plot.png}
     \caption{Ablation study effects.}
