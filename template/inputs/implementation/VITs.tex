@@ -1,4 +1,4 @@
-\subsection{ViTs: Vision Transformer Tasks (Graph + Image Integration) \& Ablation Studies}
+\subsection{Vision Transformers (ViTs)}
 
 To reproduce the comparative performance and ablation experiments, we developed a custom implementation of the Vision Transformer pipeline in PyTorch. The authors' original code was not available, thus we implemented the five attention variants (Softmax, Linear, Toeplitz, Exact $\mathbf{M}_{\alpha}$ and GRF) from scratch to verify the algorithmic description provided in the paper \cite{reid2025linear}. While the original work utilized large-scale datasets like \textit{ImageNet}, \textit{iNaturalist}, \textit{Places365}, we adapted the experimental setup to accessible, lower-resolution benchmarks to verify the algorithmic properties within a constrained computational budget.
 
