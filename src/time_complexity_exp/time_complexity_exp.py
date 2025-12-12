@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 
-# --- 1. MODIFIED PARAMETERS TO MATCH PAPER EXACTLY ---
+# --- 1. PARAMETERS TO MATCH PAPER EXACTLY ---
 # Range: 2^0 (1) to 2^12 (4096)
 N_VALUES = [2**i for i in range(0, 13)]  
 D_MODEL = 8     
@@ -12,7 +12,6 @@ P_HALT = 0.5
 TRIALS = 10     
 
 # --- SCALING FACTOR ---
-# We divide by 1,000,000 (10^6) to match the Y-axis range (10^-5 to 10^3)
 SCALE_FACTOR = 1e6 
 
 def count_flops_softmax(N, d):
@@ -89,7 +88,6 @@ def run_experiment():
     plt.title('Time Complexity Scaling', fontsize=14)
     plt.legend(fontsize=12)
     
-    # --- 2. EXACT AXIS MODIFICATIONS ---
     # Set X-Axis to 2^0 to 2^12
     plt.xlim(1, 4096) 
     
