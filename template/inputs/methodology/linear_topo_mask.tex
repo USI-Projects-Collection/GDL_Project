@@ -1,0 +1,9 @@
+\subsection{Theoretical Framework: Linear Topological Masking}
+
+Standard "vanilla" attention computes an $N \times N$ matrix $A = \text{softmax}(QK^\top)$, having $\mathcal{O}(N^2)$\cite{vaswani2017attention}.
+To incorporate graph structure $\mathcal{G}$, topological masking modulates this matrix element-wise with a mask $\mathbf{M}_{\alpha}(\mathcal{G})$:
+$$A_{masked} = \mathbf{M}_{\alpha}(\mathcal{G}) \odot A$$
+While effective, this operation requires materializing the full $N\times N$ matrix, which is incompatible with Linear Attention methods that
+decompose attention as $\phi(Q)(\phi(K)^\top V)$ to achieve $\mathcal{O}(N)$ complexity, where $\phi$ is a feature map $\phi: \mathbb{R}^d \rightarrow \mathbb{R}^m$ with $m \ll N$. \\
+
+The method proposed be Reid et al. resolves this conflict by parameterizing the mask $\mathbf{M}_{\alpha}(\mathcal{G})$ as a function of the weighted adjacency matrix $\mathbf{W}$, specifically a power series $\mathbf{M}_{\alpha}(\mathcal{G}) := \sum_{k=0}^{\infty} \alpha_k \mathbf{W}^k$. Instead of computing this explicitly, the authors approximate it implicitly via Graph Random Features\cite{reid2025linear}.

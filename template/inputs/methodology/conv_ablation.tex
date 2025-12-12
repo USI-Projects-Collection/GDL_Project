@@ -1,0 +1,5 @@
+\subsection{Convergence and Ablation Methodology}
+
+A key theoretical claim of the original paper is that the quality of the estimated mask and therefore also the downstream performance depend on the variance of the GRF estimator. The authors propose that increasing the number of random walks $n$ reduces this variance, allowing the approximation $\hat{\mathbf{M}}$ to converge towards the exact mask $\mathbf{M}_{alpha}$\cite{reid2025linear}.
+\\
+To validate this property, the methodology includes an ablation framework (Appendix C.2) where the halting probability $p_{halt}$ is fixed, and the number of walker $n$ is varied logarithmically. This isolates the effect of estimator variance on model accuracy, testing the hypothesis that performance improves when increasing $n$ until plateauing at the performance of the exact mask\cite{reid2025linear}.

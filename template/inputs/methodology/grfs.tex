@@ -1,0 +1,8 @@
+\subsection{Graph Random Features}
+
+To maintain linear complexity, the dense mask $\mathbf{M}_{\alpha}$ is approximated using Graph Random Features. The method constructs sparse feature vectors $\hat{\phi}_{\mathcal{G}}(v_i)$ for each node $v_i$ such that their dot product provides an unbiased estimate of the topological kernel\cite{reid2025linear}:
+$$\mathbb{E}[\hat{\phi}_{\mathcal{G}}(v_i)^\top \hat{\phi}_{\mathcal{G}}(v_j)] = \mathbf{M}_{\alpha ij}$$
+These features are generated via importance sampling of random walks on the graph. By simulating $n$ random walks starting from each node and halting with probability $p_{halt}$, the algorithm constructs sparse vectors where non-zero entries correspond to visited nodes. This allows the topological mask to be applied implicitly in the feature space\cite{reid2025linear}:
+$$\text{Att}_{LR, \hat{\mathbf{M}}}(Q, K, V, \mathcal{G}) := D^{-1} (\hat{\Phi}_{Q, \mathcal{G}} (\hat{\Phi}_{K, \mathcal{G}}^\top V)),$$
+$$D := \hat{\Phi}_{Q, \mathcal{G}}(\hat{\Phi}_{K, \mathcal{G}}^\top 1_N)$$
+This formulation preserves the associativity of matrix multiplication, ensuring the entire operation scales linearly with the number of tokens N.
