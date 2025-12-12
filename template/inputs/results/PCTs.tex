@@ -20,6 +20,29 @@ The results align with the topological hierarchy proposed:
     \label{fig:rollout_accuracy}
 \end{figure}
 
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[H]{0.15\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../src/Poli/data/supplementary/frame-2.png}
+        \\ (a) $t=1$
+    \end{minipage}
+    \hfill
+    \begin{minipage}[H]{0.15\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../src/Poli/data/supplementary/frame-3.png}
+        \\ (b) $t=5$
+    \end{minipage}
+    \hfill
+    \begin{minipage}[H]{0.15\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../src/Poli/data/supplementary/frame-4.png}
+        \\ (c) $t=10$
+    \end{minipage}
+    \caption{Qualitative rollout visualization. Ground truth (black) vs GRF predictions (red) at different timesteps. As the rollout progresses, predictions are made on previous predictions (closed-loop), showing accumulated drift over time.}
+    \label{fig:rollout_qualitative}
+\end{figure}
+
 \textbf{Metric Analysis.} 
 Unlike the SSIM metric in the original paper (which decays from $\sim 0.8$ to $\sim 0.6$), our accuracy metric drops from $100\%$ to $0\%$. This is due to the binary nature of our Threshold Metric: once the accumulated error pushes a point beyond the threshold distance (drift), it is marked as a "miss". However, the \textit{relative ranking} of the models is preserved, confirming the reproduction's success.
 
