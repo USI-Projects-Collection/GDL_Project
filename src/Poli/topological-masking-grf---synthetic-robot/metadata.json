@@ -1,5 +1,0 @@
-{
-  "name": "Topological Masking GRF - Synthetic Robot",
-  "description": "A synthetic dataset generator and training pipeline for reproducing the Topological Masking via Graph Random Features paper experiments on point cloud dynamics.",
-  "requestFramePermissions": []
-}
